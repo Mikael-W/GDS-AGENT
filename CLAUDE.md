@@ -15,7 +15,7 @@ Le code reflète à tout instant exactement l'état voulu, sans strate morte, qu
 - Aucun emoji et aucun tiret cadratin ni demi-cadratin, nulle part : interface, textes, commentaires, commits, réponses.
 - L'interface est en français, sans jargon technique : une erreur parle du produit, pas de l'infra.
 - Aucun déploiement sans demande explicite. Déployer = `make deploy`, jamais `docker compose` ni commandes à la main sur la VM.
-- Commit direct sur `main`, en listant ses propres fichiers (`git add <fichiers>`, jamais `git add -A` : d'autres sessions travaillent dans le même arbre). Un fichier inattendu dans `git status` : s'arrêter et demander. Messages en français : `type(portée): sujet`.
+- Une branche par ticket (`<type>/<sujet-court>`), une demande de fusion, relue le vendredi : `main` ne reçoit que des fusions (ADR 0002). Lister ses propres fichiers (`git add <fichiers>`, jamais `git add -A` : d'autres sessions travaillent dans le même arbre). Un fichier inattendu dans `git status` : s'arrêter et demander. Messages en français : `type(portée): sujet`.
 - Aucun secret ni donnée client dans Git : ni `.env`, ni fichier déposé, ni export, ni sauvegarde. Les secrets de prod vivent dans le coffre (`secret/gds/prod`), jamais à l'écran ni dans un journal.
 - Aucun mail réel depuis le poste : en local, tout part vers le Mailpit commun (`smtp://localhost:1025`, interface http://localhost:8025).
 - Appels LLM en Europe uniquement (Bedrock `eu-west-3`) ; un autre fournisseur s'inscrit d'abord comme sous-traitant dans `RUNBOOK.md`.

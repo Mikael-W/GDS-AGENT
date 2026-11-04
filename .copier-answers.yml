@@ -1,0 +1,11 @@
+# Réponses du template (AI-Sisters/template-mission). Ne pas modifier à la
+# main : `uvx copier update` les relit pour appliquer les nouvelles versions.
+_commit: v0.2.0-3-g7deac8d
+_src_path: https://github.com/AI-Sisters/template-mission.git
+client: gds
+domaine: gds.aisisters.ai
+formule: F1
+fournisseur_llm: bedrock-eu
+nom_affiche: Golfe de Saint-Tropez
+variante: next
+vm_ssh: gds

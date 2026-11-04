@@ -1,0 +1,113 @@
+# Surcouche de production de Golfe de Saint-Tropez (VM `gds`, /opt/gds),
+# appliquée sur compose.yml. Copiée avec lui à chaque déploiement par
+# scripts/deploy.sh : toute modification se fait ici, jamais sur la VM.
+#
+#   .env          réglages et secrets, réécrit depuis le coffre
+#                 (secret/gds/prod) à chaque déploiement ; 600, root
+#   images.env    images en service (IMAGE_*), tenu par deploy.sh
+#   sauvegardes/  sauvegardes de la base prises avant chaque déploiement
+#
+# Seul Caddy (TLS Let's Encrypt) publie des ports sur l'extérieur ; les
+# applications ne publient que sur 127.0.0.1 (diagnostic depuis la VM). Les
+# images viennent du registre, construites par la CI : rien n'est construit ici.
+
+x-journaux: &journaux
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+x-web: &web
+  ENVIRONNEMENT: prod
+  AUTH_SECRET: ${AUTH_SECRET:?AUTH_SECRET absente du coffre}
+  AUTH_KEYCLOAK_ISSUER: ${KEYCLOAK_URL:-https://auth.agents.aisisters.ai}/realms/${KEYCLOAK_REALM:-client-gds}
+  AUTH_KEYCLOAK_ID: gds-web
+  AUTH_KEYCLOAK_SECRET: ${AUTH_KEYCLOAK_SECRET:?AUTH_KEYCLOAK_SECRET absente du coffre}
+  AUTH_URL: https://gds.aisisters.ai
+  DATABASE_URL: postgres://app:${POSTGRES_PASSWORD}@db:5432/app
+  SENTRY_DSN: ${SENTRY_DSN_WEB:?SENTRY_DSN_WEB absente du coffre}
+  AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:?AWS_ACCESS_KEY_ID absente du coffre}
+  AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:?AWS_SECRET_ACCESS_KEY absente du coffre}
+  AWS_REGION: eu-west-3
+
+services:
+  caddy:
+    image: caddy:2
+    container_name: gds-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-donnees:/data
+      - caddy-config:/config
+    logging: *journaux
+
+  # Nom du conteneur fixe : la sauvegarde horaire de la VM le désigne par ce
+  # nom (backup_pg dans l'inventaire fleet d'aisisters-infra).
+  db:
+    container_name: gds-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD absente du coffre}
+    logging: *journaux
+
+  # Applique les migrations Drizzle en attente, puis s'arrête. Le web ne
+  # démarre qu'après son succès.
+  migrations:
+    image: ${IMAGE_WEB:?IMAGE_WEB non définie, passer par deploy.sh}
+    container_name: gds-migrations
+    command: ["node", "/app/packages/db/migrer.mjs"]
+    environment:
+      DATABASE_URL: postgres://app:${POSTGRES_PASSWORD}@db:5432/app
+      DOSSIER_MIGRATIONS: /app/packages/db/drizzle
+    networks: [donnees]
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+    healthcheck:
+      disable: true
+    logging: *journaux
+
+  web:
+    image: ${IMAGE_WEB}
+    container_name: gds-web
+    restart: unless-stopped
+    environment: *web
+    networks: [donnees, default]
+    ports:
+      - "127.0.0.1:3000:3000"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:3000/api/health/ready"]
+      interval: 10s
+      timeout: 5s
+      start_period: 20s
+      retries: 6
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+    logging: *journaux
+
+  # Travaux de fond (pg-boss) : files et tâches planifiées. Arrêt propre : les
+  # tâches en cours finissent dans le délai de grâce.
+  worker:
+    image: ${IMAGE_WORKER:?IMAGE_WORKER non définie, passer par deploy.sh}
+    container_name: gds-worker
+    restart: unless-stopped
+    environment:
+      ENVIRONNEMENT: prod
+      DATABASE_URL: postgres://app:${POSTGRES_PASSWORD}@db:5432/app
+      SENTRY_DSN: ${SENTRY_DSN_WORKER:?SENTRY_DSN_WORKER absente du coffre}
+    networks: [donnees, default]
+    stop_grace_period: 40s
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+    logging: *journaux
+
+volumes:
+  caddy-donnees:
+  caddy-config:

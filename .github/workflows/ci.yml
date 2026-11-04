@@ -1,0 +1,152 @@
+# CI de Golfe de Saint-Tropez : secrets, qualité, puis images poussées au registre OVH.
+#
+# Runners de l'organisation (VM outils, Docker disponible, aucune minute
+# facturée). Jamais de `down -v` ni de nettoyage global : d'autres jobs
+# tournent à côté.
+#
+# Secrets du dépôt : OVH_REGISTRY_URL, OVH_REGISTRY_USERNAME,
+# OVH_REGISTRY_PASSWORD (coffre, secret/registre/ovh), DISCORD_ALERTES_WEBHOOK.
+# La CI ne déploie jamais : `make deploy` depuis le poste de l'opérateur.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  secrets:
+    name: Secrets (commits poussés)
+    runs-on: [self-hosted, aisisters-ci]
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+      - name: gitleaks
+        env:
+          BEFORE: ${{ github.event.before || github.event.pull_request.base.sha }}
+        run: |
+          # Seulement les commits de ce push (premier push : tout l'historique).
+          if [ -n "$BEFORE" ] && git cat-file -e "$BEFORE" 2>/dev/null; then range="$BEFORE..HEAD"
+          elif git rev-parse -q --verify HEAD~1 >/dev/null; then range="HEAD~1..HEAD"
+          else range="HEAD"; fi
+          docker run --rm -v "$PWD:/repo" -w /repo ghcr.io/gitleaks/gitleaks:v8.30.1 \
+            git --redact --no-banner --config .gitleaks.toml --log-opts="$range" .
+
+  qualite:
+    name: Qualité (lint, types, tests)
+    runs-on: [self-hosted, aisisters-ci]
+    timeout-minutes: 10
+    # Base de test jetable, publiée sur un port aléatoire de l'hôte.
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env: {POSTGRES_USER: test, POSTGRES_PASSWORD: test, POSTGRES_DB: test}
+        ports: ["5432"]
+        options: --health-cmd "pg_isready -U test" --health-interval 5s --health-retries 20
+    env:
+      TURBO_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      # Dossier propre au job : les deux runners partagent le même HOME.
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        with:
+          dest: ${{ runner.temp }}/setup-pnpm
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+      - name: Dépendances
+        run: |
+          pnpm install --frozen-lockfile
+      - name: Lint et format
+        run: pnpm lint
+      - name: Types
+        run: pnpm typecheck
+      # Dépendances de production : une faille haute ou critique bloque.
+      - name: Audit des dépendances
+        run: pnpm audit --prod --audit-level high
+      - name: Tests
+        # Port du service connu seulement à l'exécution, donc au niveau de l'étape.
+        env:
+          TEST_DATABASE_URL: postgres://test:test@localhost:${{ job.services.postgres.ports['5432'] }}/test
+          EXIGER_BASE: "1"
+        run: pnpm test
+
+  images:
+    name: Image ${{ matrix.service }}
+    needs: [secrets, qualite]
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: [self-hosted, aisisters-ci]
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {service: web, context: ., file: apps/web/Dockerfile}
+          - {service: worker, context: ., file: apps/worker/Dockerfile}
+    steps:
+      # Identifiants Docker propres au job : les deux runners tournent sous le
+      # même utilisateur, et la déconnexion du registre en fin de job vidait
+      # le fichier commun pendant la poussée de l'autre (401 au milieu du push).
+      - name: Identifiants Docker du job
+        run: echo "DOCKER_CONFIG=$RUNNER_TEMP/docker-config" >> "$GITHUB_ENV"
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      # Driver `docker` : le cache du moteur de la VM survit d'un job à l'autre.
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+        with:
+          driver: docker
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ${{ secrets.OVH_REGISTRY_URL }}
+          username: ${{ secrets.OVH_REGISTRY_USERNAME }}
+          password: ${{ secrets.OVH_REGISTRY_PASSWORD }}
+      - name: Étiquettes
+        id: tags
+        env:
+          REGISTRE: ${{ secrets.OVH_REGISTRY_URL }}
+          SERVICE: ${{ matrix.service }}
+        run: |
+          court="${GITHUB_SHA::7}"
+          image="$REGISTRE/agents_platform/gds-$SERVICE"
+          {
+            echo "court=$court"
+            echo "tags=$image:sha-$court,$image:latest"
+          } >> "$GITHUB_OUTPUT"
+      - uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.file }}
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.tags.outputs.tags }}
+          build-args: GIT_SHA=${{ steps.tags.outputs.court }}
+
+  alerte:
+    name: Alerte si main est rouge
+    needs: [secrets, qualite, images]
+    if: failure() && github.ref == 'refs/heads/main'
+    runs-on: [self-hosted, aisisters-ci]
+    timeout-minutes: 2
+    steps:
+      - name: Message dans #alertes
+        env:
+          WEBHOOK: ${{ secrets.DISCORD_ALERTES_WEBHOOK }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          COMMIT: ${{ github.event.head_commit.message }}
+          AUTEUR: ${{ github.event.head_commit.author.name }}
+        run: |
+          titre=$(printf '%s' "${COMMIT:-lancement manuel}" | head -1 | cut -c1-120)
+          jq -n --arg c "**CI rouge sur main (gds)** : ${titre} (${AUTEUR:-?}). Les déploiements sont bloqués tant qu'elle n'est pas verte.
+          ${RUN_URL}" '{content: $c, allowed_mentions: {parse: []}, flags: 4}' |
+            curl -fsS -H "Content-Type: application/json" -d @- "$WEBHOOK"

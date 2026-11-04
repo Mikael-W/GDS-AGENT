@@ -1,0 +1,5 @@
+# Versions des outils, les mêmes que les images de prod.
+# `mise install` une fois par clone (https://mise.jdx.dev).
+[tools]
+node = "22"
+pnpm = "9.15.4"

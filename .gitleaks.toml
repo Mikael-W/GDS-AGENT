@@ -1,0 +1,18 @@
+# Règles de gitleaks : celles par défaut, plus les fichiers qui ne doivent
+# jamais entrer dans le dépôt. La CI scanne les commits de chaque push.
+[extend]
+useDefault = true
+
+[[rules]]
+id = "fichier-env"
+description = "Fichier .env versionné (seul .env.example est permis)"
+path = '''(^|/)\.env(\.[a-z0-9_-]+)?$'''
+
+[[rules]]
+id = "sauvegarde-de-base"
+description = "Sauvegarde de base versionnée"
+path = '''\.(dump|sql\.gz)$'''
+
+[allowlist]
+description = "Modèles sans valeur"
+paths = ['''(^|/)\.env\.example$''']

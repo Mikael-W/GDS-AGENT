@@ -1,0 +1,34 @@
+# Secrets : seuls les modèles sont versionnés.
+.env
+.env.*
+!.env.example
+*.env
+!deploy/.env.example
+
+# Données client : jamais dans Git (fichiers déposés, exports, sauvegardes).
+data/
+storage/
+uploads/
+exports/
+sauvegardes/
+*.dump
+*.sql.gz
+
+# Dépendances et constructions
+node_modules/
+.next/
+dist/
+.turbo/
+next-env.d.ts
+*.tsbuildinfo
+.venv/
+__pycache__/
+*.py[co]
+.pytest_cache/
+.ruff_cache/
+
+# Outils
+.DS_Store
+.idea/
+.vscode/
+*.log

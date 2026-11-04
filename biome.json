@@ -1,0 +1,78 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "includes": [
+      "**/*.ts",
+      "**/*.tsx",
+      "**/*.js",
+      "**/*.mjs",
+      "**/*.json",
+      "!**/schema.d.ts",
+      "!**/drizzle/meta",
+      "!apps/api"
+    ]
+  },
+  "formatter": {
+    "indentStyle": "space",
+    "lineWidth": 100
+  },
+  "linter": {
+    "rules": {
+      "preset": "recommended",
+      "style": {
+        "noRestrictedGlobals": {
+          "level": "error",
+          "options": {
+            "deniedGlobals": {
+              "fetch": "Appel réseau sortant : le confier à un module client dédié (réponse validée par Zod, adresses internes refusées), seul autorisé dans les overrides de biome.json."
+            }
+          }
+        },
+        "noRestrictedImports": {
+          "level": "error",
+          "options": {
+            "paths": {
+              "ai": "LLM : passer par le client unique (apps/web/lib/llm.ts), qui trace les coûts et applique les limites.",
+              "@ai-sdk/amazon-bedrock": "LLM : passer par le client unique (apps/web/lib/llm.ts), qui trace les coûts et applique les limites.",
+              "@ai-sdk/openai-compatible": "LLM : passer par le client unique (apps/web/lib/llm.ts), qui trace les coûts et applique les limites."
+            }
+          }
+        }
+      }
+    }
+  },
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["apps/web/lib/llm.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["**/contrats/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedGlobals": "off"
+          }
+        }
+      }
+    }
+  ]
+}

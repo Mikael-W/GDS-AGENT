@@ -1,0 +1,26 @@
+{
+  "name": "@projet/db",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema": "./src/schema.ts"
+  },
+  "scripts": {
+    "build": "esbuild scripts/migrer.ts --bundle --platform=node --format=esm --target=node22 --outfile=dist/migrer.mjs",
+    "typecheck": "tsc --noEmit",
+    "db:generer": "drizzle-kit generate",
+    "db:migrer": "drizzle-kit migrate"
+  },
+  "dependencies": {
+    "drizzle-orm": "0.45.4",
+    "postgres": "3.4.9"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "drizzle-kit": "0.31.11",
+    "esbuild": "0.28.2",
+    "typescript": "5.9.3"
+  }
+}

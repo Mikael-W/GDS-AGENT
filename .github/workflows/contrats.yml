@@ -1,0 +1,70 @@
+# Tests de contrat des API tierces, chaque nuit et à la demande.
+#
+# Ils appellent les API RÉELLES en lecture seule et vérifient la forme des
+# réponses dont le code dépend. Premier écart : message dans #alertes.
+# Un test dont le secret manque est ignoré et listé dans le résumé du run :
+# poser le secret du dépôt pour l'activer.
+#
+# Ajouter une API tierce = un fichier de test dans apps/web/contrats/ et ses
+# secrets ci-dessous.
+
+name: Contrats
+
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contrats:
+    name: API tierces
+    runs-on: [self-hosted, aisisters-ci]
+    timeout-minutes: 10
+    env:
+      KEYCLOAK_URL: https://auth.agents.aisisters.ai
+      KEYCLOAK_REALM: client-gds
+      TURBO_TELEMETRY_DISABLED: "1"
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: eu-west-3
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        with:
+          dest: ${{ runner.temp }}/setup-pnpm
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+      - name: Tests de contrat
+        run: |
+          pnpm install --frozen-lockfile
+          set -o pipefail
+          pnpm --filter web contrats 2>&1 | tee "$RUNNER_TEMP/contrats.txt"
+      - name: Résumé
+        if: always()
+        run: |
+          {
+            echo "## Tests de contrat"
+            echo '```'
+            cat "$RUNNER_TEMP/contrats.txt" 2>/dev/null || echo "pas de sortie"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  alerte:
+    name: Alerte au premier écart
+    needs: [contrats]
+    if: failure()
+    runs-on: [self-hosted, aisisters-ci]
+    timeout-minutes: 2
+    steps:
+      - name: Message dans #alertes
+        env:
+          WEBHOOK: ${{ secrets.DISCORD_ALERTES_WEBHOOK }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          jq -n --arg c "**Contrat d'API tierce rompu (gds)** : une API dont dépend le projet a changé ou ne répond plus.
+          ${RUN_URL}" '{content: $c, allowed_mentions: {parse: []}, flags: 4}' |
+            curl -fsS -H "Content-Type: application/json" -d @- "$WEBHOOK"

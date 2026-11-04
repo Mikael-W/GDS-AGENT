@@ -1,0 +1,4 @@
+# Runners de l'organisation (VM outils) : label propre, inconnu d'actionlint.
+self-hosted-runner:
+  labels:
+    - aisisters-ci

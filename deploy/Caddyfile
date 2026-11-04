@@ -1,0 +1,18 @@
+# Proxy de Golfe de Saint-Tropez : TLS Let's Encrypt automatique.
+gds.aisisters.ai {
+	encode zstd gzip
+
+	# Journal d'accès sur la sortie du conteneur : CrowdSec le lit pour la
+	# protection HTTP.
+	log {
+		output stdout
+		format json
+	}
+
+	# Santé et version aussi aux adresses du standard (/health, /health/ready,
+	# /version), sondées par Gatus ; le web les sert sous /api.
+	@sante path /health /health/ready /version
+	rewrite @sante /api{path}
+
+	reverse_proxy web:3000
+}

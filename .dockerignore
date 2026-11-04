@@ -1,0 +1,14 @@
+# Contexte de l'image web : la racine du monorepo, sans dépendances
+# installées, constructions, secrets ni historique.
+.git
+**/node_modules
+**/.next
+**/.turbo
+**/dist
+**/.venv
+**/.env
+**/.env.*
+!**/.env.example
+deploy
+docs
+kanban

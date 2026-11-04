@@ -1,0 +1,3 @@
+# shellcheck : les scripts sourcent deploy/projet.conf, relatif à leur dossier.
+source-path=SCRIPTDIR
+external-sources=true

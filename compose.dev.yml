@@ -1,0 +1,30 @@
+# Surcouche de développement : la base sur la boucle locale, et une base de
+# test jetable (en mémoire) pour `make test`. Les applications tournent hors
+# Docker (`make dev`), avec rechargement à chaud.
+#
+# Ports surchargeables (deux projets sur le même poste) : PORT_BASE et
+# PORT_BASE_TEST dans l'environnement, à aligner dans les .env des apps.
+# Mails en local : Mailpit commun d'aisisters-apps (smtp://localhost:1025).
+services:
+  db:
+    # Un service seulement sur un réseau interne ne publie aucun port :
+    # on le rattache aussi au réseau par défaut.
+    networks: [donnees, default]
+    ports:
+      - "127.0.0.1:${PORT_BASE:-5440}:5432"
+
+  db-test:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: test
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+    ports:
+      - "127.0.0.1:${PORT_BASE_TEST:-5441}:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test -d test"]
+      interval: 2s
+      timeout: 3s
+      retries: 30

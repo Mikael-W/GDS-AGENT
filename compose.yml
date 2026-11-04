@@ -1,0 +1,31 @@
+# Base commune au développement et à la production. Surcouches :
+#   développement : docker compose -f compose.yml -f compose.dev.yml up -d
+#   production    : deploy/compose.prod.yml (scripts/deploy.sh, jamais à la main)
+#
+# La base n'est que sur le réseau interne `donnees` : sans surcouche, rien
+# n'est joignable depuis l'hôte.
+name: gds
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: app
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-app}
+    volumes:
+      - base:/var/lib/postgresql/data
+    networks: [donnees]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d app"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+networks:
+  donnees:
+    internal: true
+  default:
+
+volumes:
+  base:

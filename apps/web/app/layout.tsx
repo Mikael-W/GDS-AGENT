@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { Entete } from "@/components/entete";
 import { Suivi } from "@/components/suivi";
 import { env } from "@/lib/env";
 
@@ -10,7 +11,7 @@ import "./globals.css";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Golfe de Saint-Tropez",
+  title: "Suivi des marchés - Golfe de Saint-Tropez",
 };
 
 export default function Racine({ children }: { children: React.ReactNode }) {
@@ -19,6 +20,7 @@ export default function Racine({ children }: { children: React.ReactNode }) {
     <html lang="fr">
       <body className="min-h-screen antialiased">
         <Suivi dsn={e.SENTRY_DSN} version={e.GIT_SHA} environnement={e.ENVIRONNEMENT} />
+        <Entete />
         {children}
       </body>
     </html>

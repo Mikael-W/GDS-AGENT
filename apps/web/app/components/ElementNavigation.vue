@@ -7,19 +7,55 @@ defineProps<{ libelle: string; route: string }>();
     <a
       :href="href"
       :aria-current="isActive ? 'page' : undefined"
-      :class="[
-        'flex min-h-11 items-center gap-3 rounded-petit px-3 text-sm focus-visible:outline-2 focus-visible:outline-ring',
-        isActive
-          ? 'bg-primary-tenu font-semibold text-primary'
-          : 'text-foreground-doux hover:bg-muted',
-      ]"
+      :class="['lien', { 'lien--actif': isActive }]"
       @click="navigate"
     >
-      <span
-        aria-hidden="true"
-        :class="['size-2 shrink-0 rounded-full', isActive ? 'bg-primary' : 'bg-puce-inactive']"
-      />
-      <span class="flex-1">{{ libelle }}</span>
+      <span aria-hidden="true" :class="['puce', { 'puce--active': isActive }]" />
+      <span class="libelle">{{ libelle }}</span>
     </a>
   </NuxtLink>
 </template>
+
+<style scoped>
+.lien {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 2.75rem;
+  padding: 0 0.75rem;
+  border-radius: var(--radius-petit);
+  color: var(--foreground-doux);
+  text-decoration: none;
+}
+
+.lien:hover {
+  background: var(--muted);
+}
+
+.lien:focus-visible {
+  outline: 2px solid var(--ring);
+}
+
+.lien--actif,
+.lien--actif:hover {
+  background: var(--primary-tenu);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.puce {
+  flex-shrink: 0;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--puce-inactive);
+}
+
+.puce--active {
+  background: var(--primary);
+}
+
+.libelle {
+  flex: 1;
+}
+</style>

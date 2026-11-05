@@ -1,5 +1,3 @@
-import tailwindcss from "@tailwindcss/vite";
-
 const issuer = process.env.AUTH_KEYCLOAK_ISSUER ?? "";
 const [serverUrl, realm] = issuer.includes("/realms/") ? issuer.split("/realms/") : ["", ""];
 
@@ -10,7 +8,6 @@ export default defineNuxtConfig({
   ssr: true,
   modules: ["nuxt-auth-utils", "@sentry/nuxt/module"],
   css: ["~/assets/css/main.css"],
-  vite: { plugins: [tailwindcss()] },
   nitro: { preset: "node-server" },
   runtimeConfig: {
     session: {

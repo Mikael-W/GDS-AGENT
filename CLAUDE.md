@@ -19,6 +19,7 @@ Le code reflète à tout instant exactement l'état voulu, sans strate morte, qu
 - Aucun secret ni donnée client dans Git : ni `.env`, ni fichier déposé, ni export, ni sauvegarde. Les secrets de prod vivent dans le coffre (`secret/gds/prod`), jamais à l'écran ni dans un journal.
 - Aucun mail réel depuis le poste : en local, tout part vers le Mailpit commun (`smtp://localhost:1025`, interface http://localhost:8025).
 - Appels LLM en Europe uniquement (Bedrock `eu-west-3`) ; un autre fournisseur s'inscrit d'abord comme sous-traitant dans `RUNBOOK.md`.
+- Aucune classe utilitaire dans les templates : chaque composant porte ses classes personnalisées dans son bloc `<style scoped>`, écrites en CSS simple sur les jetons de `main.css`. Pas de Tailwind.
 - Valider aux frontières (formulaires, réponses des API tierces, réglages) avec Zod, faire confiance au code interne.
 - Appels réseau sortants et SDK LLM cantonnés à leur module : Biome refuse `fetch` hors d'un client dédié déclaré dans ses overrides (les tests de contrat en sont un), et le SDK LLM (`ai`, `@ai-sdk/amazon-bedrock`, `@ai-sdk/openai-compatible`) hors de `apps/web/server/utils/llm.ts`.
 

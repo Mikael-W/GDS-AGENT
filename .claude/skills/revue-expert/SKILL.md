@@ -23,6 +23,7 @@ Appuis à charger avant de juger : les skills `vue-nuxt`, `unit-tests`, `clean-c
 - Répertoires Nuxt 4 respectés (`app/`, `server/`), auto-imports non masqués, pas d'import inutile.
 - Accessibilité : éléments sémantiques, libellés, focus visible, contrastes issus des jetons.
 - Aucune couleur ni espacement en dur : uniquement les jetons de `app/assets/css/main.css`.
+- Aucune classe utilitaire (Tailwind ou équivalent) dans les templates : des classes personnalisées nommées dans le `<style scoped>` du composant.
 - SSR : pas d'accès à `window` ou `document` hors `onMounted`, pas d'état global partagé entre requêtes.
 
 ### Architecture DDD

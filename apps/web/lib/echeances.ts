@@ -4,29 +4,62 @@
  * du jour est toujours passée en argument : une règle se teste par table, et
  * deux exécutions sur les mêmes données donnent le même résultat.
  *
+ * Les cinq familles et leurs déclencheurs viennent de l'atelier 1 et de la
+ * restitution S1. Trois d'entre elles relancent tant que la donnée attendue
+ * n'est pas saisie dans CIRIL : une échéance ratée ne disparaît pas.
+ *
  * L'agent signale, il ne décide pas : chaque alerte porte la raison qui l'a
  * déclenchée, en français, pour que l'agent instructeur puisse la vérifier.
  */
 
 export const FAMILLES = [
   "reconduction",
-  "garantie",
-  "reception",
-  "point_six_mois",
+  "reception_manquante",
+  "retenue_garantie",
   "sans_bon_de_commande",
+  "point_six_mois",
 ] as const;
 
 export type Famille = (typeof FAMILLES)[number];
 
-/** Nombre de jours d'anticipation par famille, à faire valider par les utilisateurs. */
-export type Fenetres = Record<Famille, number>;
+export const LIBELLES: Record<Famille, string> = {
+  reconduction: "Reconduction",
+  reception_manquante: "Réception manquante",
+  retenue_garantie: "Retenue de garantie",
+  sans_bon_de_commande: "Sans bon de commande",
+  point_six_mois: "Point à six mois",
+};
 
-export const FENETRES: Fenetres = {
-  reconduction: 120,
-  garantie: 60,
-  reception: 30,
-  point_six_mois: 15,
-  sans_bon_de_commande: 90,
+/**
+ * Paramètres des règles, à faire confirmer marché par marché quand le CCAP
+ * dit autre chose : le préavis de non-reconduction, en particulier, est lu
+ * dans le CCAP et vaut 1 mois sur certains marchés.
+ */
+export type Reglages = {
+  /** Préavis de non-reconduction retenu par le service, à défaut de CCAP. */
+  preavisReconductionMois: number;
+  /** Première relance après la fin de marché sans réception saisie. */
+  receptionPremiereRelanceMois: number;
+  /** Intervalle des relances suivantes, tant que la réception manque. */
+  receptionRelanceMois: number;
+  /** Délai après réception au terme duquel la retenue peut être libérée. */
+  retenueApresReceptionMois: number;
+  /** Première relance après notification sans aucun bon de commande. */
+  bonDeCommandePremiereRelanceJours: number;
+  /** Intervalle des relances suivantes, tant qu'aucun bon de commande. */
+  bonDeCommandeRelanceJours: number;
+  /** Le point mensuel annonce les marchés atteignant six mois le mois suivant. */
+  pointMoisAnnonce: number;
+};
+
+export const REGLAGES: Reglages = {
+  preavisReconductionMois: 3,
+  receptionPremiereRelanceMois: 3,
+  receptionRelanceMois: 3,
+  retenueApresReceptionMois: 12,
+  bonDeCommandePremiereRelanceJours: 15,
+  bonDeCommandeRelanceJours: 15,
+  pointMoisAnnonce: 5,
 };
 
 /** Ce qu'une règle a besoin de savoir d'un marché, extrait du référentiel. */
@@ -35,10 +68,14 @@ export type MarcheSuivi = {
   actif: boolean;
   solde: boolean;
   aBonsDeCommande: boolean;
-  reconductionTacite: boolean | null;
+  reconductible: boolean;
+  /** Préavis lu dans le CCAP, en mois ; sinon celui des réglages s'applique. */
+  preavisReconductionMois: number | null;
+  notifieLe: string | null;
+  /** Début de la période d'exécution en cours, reconduction comprise. */
   debuteLe: string | null;
+  /** Fin de la période d'exécution en cours. */
   finitLe: string | null;
-  garantieFinitLe: string | null;
   receptionneLe: string | null;
   dernierEngagementLe: string | null;
 };
@@ -50,6 +87,8 @@ export type Alerte = {
   echeanceLe: string;
   /** Jours restants à la date d'évaluation, négatif si l'échéance est passée. */
   joursRestants: number;
+  /** Nombre de relances déjà passées, 0 pour une première alerte. */
+  relances: number;
   /** Phrase lisible par un agent instructeur, sans vocabulaire technique. */
   explication: string;
 };
@@ -63,21 +102,31 @@ function enJour(iso: string): number {
   return Date.UTC(annee, mois - 1, jour) / JOUR_MS;
 }
 
-function ajouter(iso: string, jours: number): string {
-  return new Date((enJour(iso) + jours) * JOUR_MS).toISOString().slice(0, 10);
+function versIso(jours: number): string {
+  return new Date(jours * JOUR_MS).toISOString().slice(0, 10);
+}
+
+function ajouterJours(iso: string, jours: number): string {
+  return versIso(enJour(iso) + jours);
+}
+
+/**
+ * Ajoute des mois en gardant le quantième, ramené au dernier jour du mois
+ * quand il n'existe pas : 31/01 plus 1 mois donne 28/02.
+ */
+function ajouterMois(iso: string, mois: number): string {
+  const annee = Number(iso.slice(0, 4));
+  const m = Number(iso.slice(5, 7));
+  const jour = Number(iso.slice(8, 10));
+  const total = (annee * 12 + (m - 1)) + mois;
+  const nouvelleAnnee = Math.floor(total / 12);
+  const nouveauMois = total % 12;
+  const dernier = new Date(Date.UTC(nouvelleAnnee, nouveauMois + 1, 0)).getUTCDate();
+  return versIso(Date.UTC(nouvelleAnnee, nouveauMois, Math.min(jour, dernier)) / JOUR_MS);
 }
 
 function ecart(de: string, a: string): number {
   return enJour(a) - enJour(de);
-}
-
-/**
- * Déclenche une alerte quand l'échéance entre dans la fenêtre d'anticipation,
- * et la garde tant qu'elle n'est pas traitée, y compris une fois dépassée :
- * une échéance ratée doit rester visible.
- */
-function dansLaFenetre(aujourdHui: string, echeance: string, fenetre: number): boolean {
-  return ecart(aujourdHui, echeance) <= fenetre;
 }
 
 function alerte(
@@ -85,6 +134,7 @@ function alerte(
   marche: MarcheSuivi,
   echeanceLe: string,
   aujourdHui: string,
+  relances: number,
   explication: string,
 ): Alerte {
   return {
@@ -92,8 +142,37 @@ function alerte(
     reference: marche.reference,
     echeanceLe,
     joursRestants: ecart(aujourdHui, echeanceLe),
+    relances,
     explication,
   };
+}
+
+/**
+ * Nombre de relances déjà passées pour une alerte qui revient à intervalle
+ * fixe depuis une première échéance, et date de la relance courante.
+ */
+function relanceCourante(premiere: string, intervalleJours: number, aujourdHui: string) {
+  const depuis = ecart(premiere, aujourdHui);
+  if (depuis < 0) return { date: premiere, relances: 0 };
+  const passees = Math.floor(depuis / intervalleJours);
+  return { date: ajouterJours(premiere, passees * intervalleJours), relances: passees };
+}
+
+/**
+ * Même chose pour une relance exprimée en mois : les mois n'ayant pas tous
+ * la même longueur, on avance de mois en mois plutôt que de diviser des jours.
+ */
+function relanceCouranteMois(premiere: string, intervalleMois: number, aujourdHui: string) {
+  if (ecart(premiere, aujourdHui) < 0) return { date: premiere, relances: 0 };
+  let date = premiere;
+  let relances = 0;
+  for (let garde = 0; garde < 240; garde += 1) {
+    const suivante = ajouterMois(date, intervalleMois);
+    if (ecart(suivante, aujourdHui) < 0) break;
+    date = suivante;
+    relances += 1;
+  }
+  return { date, relances };
 }
 
 /**
@@ -103,88 +182,105 @@ function alerte(
 export function evaluer(
   marche: MarcheSuivi,
   aujourdHui: string,
-  fenetres: Fenetres = FENETRES,
+  reglages: Reglages = REGLAGES,
 ): Alerte[] {
   if (!marche.actif || marche.solde) return [];
 
   const alertes: Alerte[] = [];
 
-  if (marche.finitLe && marche.reconductionTacite !== null) {
-    const limite = ajouter(marche.finitLe, -fenetres.reconduction);
-    if (dansLaFenetre(aujourdHui, limite, 0)) {
+  // Reconduction : alerte au préavis, maintenue visible jusqu'à la décision.
+  if (marche.reconductible && marche.finitLe) {
+    const preavis = marche.preavisReconductionMois ?? reglages.preavisReconductionMois;
+    const limite = ajouterMois(marche.finitLe, -preavis);
+    // L'alerte s'ouvre quand on entre dans la fenêtre de préavis, et reste
+    // visible une fois la date limite passée, tant qu'aucune décision n'est
+    // enregistrée.
+    if (ecart(aujourdHui, limite) <= 0) {
       alertes.push(
         alerte(
           "reconduction",
           marche,
           limite,
           aujourdHui,
-          marche.reconductionTacite
-            ? `Reconduction tacite au ${marche.finitLe} : sans décision contraire, le marché repart.`
-            : `Reconduction expresse à décider avant le ${marche.finitLe}.`,
+          0,
+          `Décision de non-reconduction à notifier avant le ${limite}, soit ${preavis} mois avant la fin de la période en cours, le ${marche.finitLe}. Sans décision contraire, le marché repart.`,
         ),
       );
     }
   }
 
-  if (
-    marche.garantieFinitLe &&
-    dansLaFenetre(aujourdHui, marche.garantieFinitLe, fenetres.garantie)
-  ) {
-    alertes.push(
-      alerte(
-        "garantie",
-        marche,
-        marche.garantieFinitLe,
+  // Réception manquante : fin de marché plus 3 mois, puis tous les 3 mois.
+  if (marche.finitLe && !marche.receptionneLe) {
+    const premiere = ajouterMois(marche.finitLe, reglages.receptionPremiereRelanceMois);
+    if (ecart(aujourdHui, premiere) <= 0) {
+      const { date, relances } = relanceCouranteMois(
+        premiere,
+        reglages.receptionRelanceMois,
         aujourdHui,
-        `Fin de la garantie le ${marche.garantieFinitLe} : dernier moment pour signaler une réserve.`,
-      ),
-    );
-  }
-
-  if (
-    marche.finitLe &&
-    !marche.receptionneLe &&
-    dansLaFenetre(aujourdHui, marche.finitLe, fenetres.reception)
-  ) {
-    alertes.push(
-      alerte(
-        "reception",
-        marche,
-        marche.finitLe,
-        aujourdHui,
-        `Le marché se termine le ${marche.finitLe} et aucune réception n'est enregistrée.`,
-      ),
-    );
-  }
-
-  if (marche.debuteLe) {
-    const point = ajouter(marche.debuteLe, 182);
-    if (dansLaFenetre(aujourdHui, point, fenetres.point_six_mois)) {
+      );
       alertes.push(
         alerte(
-          "point_six_mois",
+          "reception_manquante",
           marche,
-          point,
+          date,
           aujourdHui,
-          `Six mois d'exécution au ${point} : point d'étape avec le titulaire.`,
+          relances,
+          `Le marché s'est terminé le ${marche.finitLe} et aucune date de réception n'est enregistrée dans CIRIL. Rappel tous les ${reglages.receptionRelanceMois} mois jusqu'à la saisie.`,
         ),
       );
     }
   }
 
-  if (marche.aBonsDeCommande && marche.debuteLe) {
-    const depuis = marche.dernierEngagementLe ?? marche.debuteLe;
-    const limite = ajouter(depuis, fenetres.sans_bon_de_commande);
-    if (dansLaFenetre(aujourdHui, limite, 0)) {
+  // Retenue de garantie : un an après la réception, libération possible.
+  if (marche.receptionneLe) {
+    const liberation = ajouterMois(marche.receptionneLe, reglages.retenueApresReceptionMois);
+    alertes.push(
+      alerte(
+        "retenue_garantie",
+        marche,
+        liberation,
+        aujourdHui,
+        0,
+        `Réception prononcée le ${marche.receptionneLe}. Au ${liberation}, la retenue de garantie peut être libérée, après contrôle humain.`,
+      ),
+    );
+  }
+
+  // Sans bon de commande : notification plus 15 jours, puis tous les 15 jours.
+  if (marche.aBonsDeCommande && marche.notifieLe && !marche.dernierEngagementLe) {
+    const premiere = ajouterJours(marche.notifieLe, reglages.bonDeCommandePremiereRelanceJours);
+    if (ecart(aujourdHui, premiere) <= 0) {
+      const { date, relances } = relanceCourante(
+        premiere,
+        reglages.bonDeCommandeRelanceJours,
+        aujourdHui,
+      );
       alertes.push(
         alerte(
           "sans_bon_de_commande",
           marche,
-          limite,
+          date,
           aujourdHui,
-          marche.dernierEngagementLe
-            ? `Aucun bon de commande depuis le ${marche.dernierEngagementLe}.`
-            : `Aucun bon de commande depuis le début du marché, le ${marche.debuteLe}.`,
+          relances,
+          `Notifié le ${marche.notifieLe}, aucun bon de commande dans CIRIL depuis. Rappel tous les ${reglages.bonDeCommandeRelanceJours} jours.`,
+        ),
+      );
+    }
+  }
+
+  // Point à six mois : annoncé au point mensuel du mois précédent.
+  if (marche.debuteLe) {
+    const sixMois = ajouterMois(marche.debuteLe, 6);
+    const annonce = ajouterMois(marche.debuteLe, reglages.pointMoisAnnonce);
+    if (ecart(aujourdHui, annonce) <= 0 && ecart(aujourdHui, sixMois) >= 0) {
+      alertes.push(
+        alerte(
+          "point_six_mois",
+          marche,
+          sixMois,
+          aujourdHui,
+          0,
+          `Six mois d'exécution au ${sixMois}, à inscrire au point mensuel du 1er. La période en cours a démarré le ${marche.debuteLe}.`,
         ),
       );
     }
@@ -197,9 +293,42 @@ export function evaluer(
 export function evaluerPortefeuille(
   marches: MarcheSuivi[],
   aujourdHui: string,
-  fenetres: Fenetres = FENETRES,
+  reglages: Reglages = REGLAGES,
 ): Alerte[] {
   return marches
-    .flatMap((m) => evaluer(m, aujourdHui, fenetres))
+    .flatMap((m) => evaluer(m, aujourdHui, reglages))
     .sort((a, b) => a.joursRestants - b.joursRestants);
 }
+
+/**
+ * Point mensuel du 1er : les marchés dont les six mois d'exécution tombent
+ * dans le mois suivant. Envoyé en une fois, pas marché par marché.
+ */
+export function pointMensuel(
+  marches: MarcheSuivi[],
+  premierDuMois: string,
+  reglages: Reglages = REGLAGES,
+): Alerte[] {
+  const debutMoisSuivant = ajouterMois(premierDuMois, 1);
+  const debutMoisDApres = ajouterMois(premierDuMois, 2);
+  return marches
+    .filter((m) => m.actif && !m.solde && m.debuteLe)
+    .flatMap((m) => {
+      const sixMois = ajouterMois(m.debuteLe as string, 6);
+      if (ecart(debutMoisSuivant, sixMois) < 0) return [];
+      if (ecart(debutMoisDApres, sixMois) >= 0) return [];
+      return [
+        alerte(
+          "point_six_mois",
+          m,
+          sixMois,
+          premierDuMois,
+          0,
+          `Six mois d'exécution au ${sixMois}. Période en cours démarrée le ${m.debuteLe}.`,
+        ),
+      ];
+    })
+    .sort((a, b) => a.joursRestants - b.joursRestants);
+}
+
+export { ajouterMois };

@@ -1,8 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, test } from "vitest";
 
 import {
   type Alerte,
   evaluer,
+  evaluerEcheancier,
   evaluerPortefeuille,
   type MarcheSuivi,
 } from "@/shared/domaine/echeances";
@@ -159,5 +160,58 @@ describe("portefeuille", () => {
         }),
       ),
     ).toEqual(["reception"]);
+  });
+});
+
+describe("échéancier des six prochains mois", () => {
+  describe("Given un marché dont la reconduction tacite tombe en février 2027", () => {
+    const m = marche({ finitLe: "2027-06-04", reconductionTacite: true });
+
+    describe("When on projette l'échéancier au 4 novembre 2026", () => {
+      test("Then la reconduction est annoncée à sa date de déclenchement", () => {
+        const echeances = evaluerEcheancier([m], "2026-11-04");
+
+        expect(echeances.map((a) => [a.famille, a.echeanceLe, a.joursRestants])).toEqual([
+          ["reconduction", "2027-02-04", 92],
+        ]);
+      });
+    });
+
+    describe("When on regarde seulement les 60 prochains jours", () => {
+      test("Then la reconduction de février n'y figure pas encore", () => {
+        const echeances = evaluerEcheancier([m], "2026-11-04", 60);
+
+        expect(echeances).toEqual([]);
+      });
+    });
+  });
+
+  describe("Given deux marchés dont les échéances se croisent dans le temps", () => {
+    describe("When on projette l'échéancier", () => {
+      test("Then les échéances sont rangées de la plus proche à la plus lointaine", () => {
+        const tard = marche({
+          reference: "AO 26028",
+          finitLe: "2027-06-04",
+          reconductionTacite: false,
+        });
+        const tot = marche({ reference: "MA 24036", garantieFinitLe: "2026-11-26" });
+
+        const echeances = evaluerEcheancier([tard, tot], "2026-11-04");
+
+        expect(echeances.map((a) => a.reference)).toEqual(["MA 24036", "AO 26028"]);
+      });
+    });
+  });
+
+  describe("Given une garantie qui prend fin un an plus tard", () => {
+    describe("When on projette l'échéancier", () => {
+      test("Then elle reste hors de l'horizon de six mois", () => {
+        const m = marche({ garantieFinitLe: "2027-11-04" });
+
+        const echeances = evaluerEcheancier([m], "2026-11-04");
+
+        expect(echeances).toEqual([]);
+      });
+    });
   });
 });

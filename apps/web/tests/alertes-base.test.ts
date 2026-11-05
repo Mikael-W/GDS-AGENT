@@ -3,7 +3,12 @@ import { eq } from "drizzle-orm";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
 
-import { detailAlerte, listerAlertes, traiterAlerte } from "@/server/utils/alertes";
+import {
+  detailAlerte,
+  listerAlertes,
+  listerEcheances,
+  traiterAlerte,
+} from "@/server/utils/alertes";
 
 const url = process.env.TEST_DATABASE_URL;
 
@@ -229,6 +234,42 @@ describe.skipIf(!url)("alertes d'échéance lues dans la base de l'agent", () =>
         const detail = await detailAlerte("AO 25075", "reconduction", "2027-02-10", db);
 
         expect(detail?.traitement).toBeNull();
+      });
+    });
+
+    describe("When on consulte l'échéancier en novembre 2026 après un traitement et un changement de date", () => {
+      let echeances: Awaited<ReturnType<typeof listerEcheances>>;
+
+      beforeAll(async () => {
+        await preparerMarche({ finitLe: "2027-06-04" });
+        echeances = await listerEcheances("2026-11-04", db);
+      });
+
+      test("Then la reconduction de février apparaît, avant même que l'alerte se déclenche", () => {
+        expect(echeances.map((a) => [a.famille, a.echeanceLe])).toEqual([
+          ["reconduction", "2027-02-04"],
+        ]);
+      });
+
+      test("Then elle porte l'objet et le service du marché", () => {
+        expect(echeances[0]).toMatchObject({
+          objet: "Entretien des espaces verts et des abords",
+          service: "Espaces verts",
+        });
+      });
+    });
+
+    describe("When une échéance de l'échéancier a déjà été traitée", () => {
+      let echeances: Awaited<ReturnType<typeof listerEcheances>>;
+
+      beforeAll(async () => {
+        await preparerMarche();
+        await traiterAlerte(saisie, "2026-11-04", db);
+        echeances = await listerEcheances("2026-11-05", db);
+      });
+
+      test("Then la reconduction traitée n'y figure plus", () => {
+        expect(echeances.map((a) => a.famille)).not.toContain("reconduction");
       });
     });
 

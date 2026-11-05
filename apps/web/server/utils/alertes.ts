@@ -2,7 +2,14 @@ import { engagements, marches, traitementsAlertes } from "@projet/db/schema";
 import { and, eq, max } from "drizzle-orm";
 
 import type { AlerteListe, DetailAlerte } from "#shared/domaine/alertes";
-import { evaluer, evaluerPortefeuille, type Famille } from "#shared/domaine/echeances";
+import {
+  type Alerte,
+  evaluer,
+  evaluerEcheancier,
+  evaluerPortefeuille,
+  type Famille,
+  type MarcheSuivi,
+} from "#shared/domaine/echeances";
 import { base } from "./base";
 
 type Base = ReturnType<typeof base>;
@@ -36,7 +43,10 @@ function suivis(db: Base, reference?: string) {
 const cle = (marcheId: number, famille: string, echeanceLe: string) =>
   `${marcheId}|${famille}|${echeanceLe}`;
 
-export async function listerAlertes(aujourdhui: string, db = base()): Promise<AlerteListe[]> {
+async function nonTraitees(
+  db: Base,
+  calculer: (portefeuille: MarcheSuivi[]) => Alerte[],
+): Promise<AlerteListe[]> {
   const portefeuille = await suivis(db);
   const traitees = new Set(
     (await db.select().from(traitementsAlertes)).map((t) =>
@@ -45,11 +55,19 @@ export async function listerAlertes(aujourdhui: string, db = base()): Promise<Al
   );
 
   const parReference = new Map(portefeuille.map((m) => [m.reference, m]));
-  return evaluerPortefeuille(portefeuille, aujourdhui).flatMap((alerte) => {
+  return calculer(portefeuille).flatMap((alerte) => {
     const marche = parReference.get(alerte.reference);
     if (!marche || traitees.has(cle(marche.id, alerte.famille, alerte.echeanceLe))) return [];
     return [{ ...alerte, objet: marche.objet, service: marche.service }];
   });
+}
+
+export function listerAlertes(aujourdhui: string, db = base()): Promise<AlerteListe[]> {
+  return nonTraitees(db, (portefeuille) => evaluerPortefeuille(portefeuille, aujourdhui));
+}
+
+export function listerEcheances(aujourdhui: string, db = base()): Promise<AlerteListe[]> {
+  return nonTraitees(db, (portefeuille) => evaluerEcheancier(portefeuille, aujourdhui));
 }
 
 async function chercher(reference: string, famille: Famille, aujourdhui: string, db: Base) {

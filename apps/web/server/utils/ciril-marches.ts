@@ -5,7 +5,7 @@ import { eq, sql } from "drizzle-orm";
 import { base } from "./base";
 import { type ContratCiril, getAccessList, getContrats, urlFinancesDepuisAcces } from "./ciril";
 import { env } from "./env";
-import { journaliser } from "./synchronisations";
+import { type BilanSynchro, journaliser } from "./synchronisations";
 
 /** AAAA-MM-JJ ou AAAAMMJJ CIRIL → ISO AAAA-MM-JJ ; autre valeur → null. */
 function enDate(v: string | undefined): string | null {
@@ -69,11 +69,8 @@ export function projeter(contrat: ContratCiril): MappingMarche {
   };
 }
 
-export type ResultatSynchro = {
+export type ResultatSynchro = BilanSynchro & {
   pointAcces: string;
-  recus: number;
-  inseres: number;
-  misAJour: number;
   inchanges: number;
 };
 

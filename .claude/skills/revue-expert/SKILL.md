@@ -37,12 +37,15 @@ Appuis à charger avant de juger : les skills `vue-nuxt`, `unit-tests`, `clean-c
 - Types déduits quand c'est lisible, unions discriminées pour les états, `readonly` pour l'immuable.
 - Pas de type dupliqué : un type, une source.
 
-### Tests unitaires (Vitest)
-- Style imposé par le skill `unit-tests` : `describe('Given...')` > `describe('When...')` > `test('Then...')`, corps en Arrange / Act / Assert séparés par une ligne vide, aucun commentaire.
+### Tests unitaires (Vitest), spécification vivante
+Les tests sont la documentation exécutable du comportement : un agent qui lit les noms de `describe` et de `test` d'un fichier doit comprendre la règle métier sans ouvrir le code.
+- Style BDD imposé par le skill `unit-tests` : `describe('Given...')` > `describe('When...')` > `test('Then...')`, corps en Arrange / Act / Assert séparés par une ligne vide, aucun commentaire.
+- Les phrases parlent le langage du métier (marché, lot, alerte, échéance, révision, avance, notification, réception), jamais celui de l'implémentation (« appelle la fonction », « retourne true »). Un `Then` s'énonce comme une règle que le client reconnaîtrait.
+- Les valeurs de l'Arrange sont celles du cadrage (dates, seuils, montants réalistes, références de marché), pas `foo` ni `1`. Un cas limite porte son nom (« exactement au seuil », « sans date de réception »).
 - Une attente comportementale par `Then`. Tester le comportement observable, pas l'implémentation.
-- Domaine testé sans Vue ; composants testés par leur rendu et leurs événements.
+- Domaine testé sans Vue ni base. Requêtes et routes serveur testées sur la base de test jetable (`TEST_DATABASE_URL`, démarrée par `make test`) avec des lignes insérées dans l'Arrange et vérifiées dans l'Assert. Composants testés par leur rendu et leurs événements.
 - Pas de test fragile (horloge, hasard, ordre) : temps et aléas injectés.
-- Chaque règle métier et chaque branche d'erreur ont un test. Un test qui ne peut pas échouer est un défaut.
+- Chaque règle métier et chaque branche d'erreur ont un test. Un test qui ne peut pas échouer est un défaut, comme un test qui n'apprend rien au lecteur sur la règle qu'il protège.
 
 ### Règles du dépôt
 - Zéro legacy : aucun code mort, import inutilisé, commentaire, TODO, branche de compatibilité.

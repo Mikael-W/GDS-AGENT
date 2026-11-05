@@ -64,6 +64,6 @@ async function envoyer() {
 }
 
 .erreur {
-  color: var(--destructive);
+  color: var(--retard-foreground);
 }
 </style>

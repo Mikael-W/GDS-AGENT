@@ -154,7 +154,7 @@ async function synchroniserCiril() {
 }
 
 .erreur {
-  color: var(--destructive);
+  color: var(--retard-foreground);
 }
 
 .resultats {

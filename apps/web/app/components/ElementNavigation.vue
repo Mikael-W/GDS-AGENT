@@ -1,5 +1,5 @@
 <script setup lang="ts">
-defineProps<{ libelle: string; route: string; compteur?: number }>();
+defineProps<{ libelle: string; route: string }>();
 </script>
 
 <template>
@@ -20,12 +20,6 @@ defineProps<{ libelle: string; route: string; compteur?: number }>();
         :class="['size-2 shrink-0 rounded-full', isActive ? 'bg-primary' : 'bg-puce-inactive']"
       />
       <span class="flex-1">{{ libelle }}</span>
-      <span
-        v-if="compteur !== undefined"
-        class="rounded-full bg-primary px-2 text-xs font-semibold text-primary-foreground"
-      >
-        {{ compteur }}
-      </span>
     </a>
   </NuxtLink>
 </template>

@@ -1,5 +1,5 @@
 <template>
-  <aside class="flex flex-col gap-6 border-b border-border bg-surface p-4 md:border-r md:border-b-0">
+  <aside aria-label="Barre latérale" class="flex flex-col gap-6 border-b border-border bg-surface p-4 md:border-r md:border-b-0">
     <div class="flex items-center gap-3">
       <span aria-hidden="true" class="size-9 shrink-0 rounded-petit bg-primary" />
       <div>
@@ -14,8 +14,8 @@
 
     <div class="mt-auto flex flex-col gap-3">
       <EtatSynchronisation />
-      <form action="/auth/deconnexion" method="post">
-        <Bouton type="submit" variante="contour" taille="petit">Se déconnecter</Bouton>
+      <form action="/auth/deconnexion" method="post" class="py-0.5">
+        <Bouton type="submit" variante="contour">Se déconnecter</Bouton>
       </form>
     </div>
   </aside>

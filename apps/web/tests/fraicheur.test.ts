@@ -25,10 +25,15 @@ describe("fraicheur", () => {
     const lecture = new Date("2026-11-05T05:00:00Z");
 
     describe("When on évalue la fraîcheur", () => {
-      test("Then les données sont à jour", () => {
+      test("Then l'état est conforme", () => {
         const resultat = fraicheur(lecture, maintenant);
 
         expect(resultat.etat).toBe("conforme");
+      });
+
+      test("Then le titre annonce des données à jour", () => {
+        const resultat = fraicheur(lecture, maintenant);
+
         expect(resultat.titre).toBe("Données à jour");
       });
 
@@ -56,10 +61,15 @@ describe("fraicheur", () => {
     const lecture = new Date(maintenant.getTime() - SEUIL_FRAICHEUR_MS - 1);
 
     describe("When on évalue la fraîcheur", () => {
-      test("Then les données sont signalées en retard", () => {
+      test("Then l'état est en retard", () => {
         const resultat = fraicheur(lecture, maintenant);
 
         expect(resultat.etat).toBe("retard");
+      });
+
+      test("Then le titre annonce des données anciennes", () => {
+        const resultat = fraicheur(lecture, maintenant);
+
         expect(resultat.titre).toBe("Données anciennes");
       });
 

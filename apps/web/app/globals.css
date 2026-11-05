@@ -1,55 +1,85 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
-
-/* Jetons de couleur (shadcn/ui). Le thème du client se pose ici. */
+/*
+ * Jetons de la direction visuelle retenue par le client (ADR 0005,
+ * docs/systeme-de-design.md). Interface claire uniquement : aucune variante
+ * sombre n'a été validée, et un thème non validé serait du code mort.
+ * Toute couleur de l'interface vient d'ici, jamais d'un hexadécimal posé
+ * dans un composant.
+ */
 :root {
-  --radius: 0.5rem;
-  --background: oklch(0.985 0 0);
-  --foreground: oklch(0.21 0.02 260);
-  --primary: oklch(0.45 0.12 260);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.95 0.01 260);
-  --secondary-foreground: oklch(0.21 0.02 260);
-  --muted: oklch(0.95 0.01 260);
-  --muted-foreground: oklch(0.5 0.02 260);
-  --destructive: oklch(0.58 0.22 27);
-  --border: oklch(0.9 0.01 260);
-  --input: oklch(0.9 0.01 260);
-  --ring: oklch(0.45 0.12 260);
-}
+  /* Rayons */
+  --radius: 0.625rem;
+  --radius-carte: 0.8125rem;
+  --radius-petit: 0.5625rem;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: oklch(0.18 0.02 260);
-    --foreground: oklch(0.95 0 0);
-    --primary: oklch(0.75 0.1 260);
-    --primary-foreground: oklch(0.18 0.02 260);
-    --secondary: oklch(0.26 0.02 260);
-    --secondary-foreground: oklch(0.95 0 0);
-    --muted: oklch(0.26 0.02 260);
-    --muted-foreground: oklch(0.7 0.02 260);
-    --border: oklch(0.3 0.02 260);
-    --input: oklch(0.3 0.02 260);
-    --ring: oklch(0.75 0.1 260);
-  }
+  /* Fonds et texte */
+  --background: #f7f8fa;
+  --surface: #ffffff;
+  --foreground: #15201c;
+  --foreground-doux: #4c5a54;
+  --muted: #eef1f4;
+  --muted-foreground: #68736e;
+  --foreground-tenu: #96a09b;
+
+  /* Couleur d'accent */
+  --primary: #14564a;
+  --primary-foreground: #ffffff;
+  --primary-survol: #0c3a31;
+  --primary-tenu: #f1f6f4;
+
+  /* Traits */
+  --border: #e8ebef;
+  --border-interne: #eef1f4;
+  --input: #dde2e7;
+  --ring: #14564a;
+
+  /* États : fond puis texte. Chaque paire passe 4,5:1. */
+  --retard: #fcebe9;
+  --retard-foreground: #8c241c;
+  --attention: #fbf2e4;
+  --attention-foreground: #75470a;
+  --information: #edf3f8;
+  --information-foreground: #1f4e72;
+  --conforme: #f1f6f4;
+  --conforme-foreground: #14564a;
+  --neutre: #eef1f4;
+  --neutre-foreground: #4c5a54;
+
+  --destructive: #8c241c;
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
   --color-foreground: var(--foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
+  --color-foreground-doux: var(--foreground-doux);
+  --color-foreground-tenu: var(--foreground-tenu);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
-  --color-destructive: var(--destructive);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-survol: var(--primary-survol);
+  --color-primary-tenu: var(--primary-tenu);
   --color-border: var(--border);
+  --color-border-interne: var(--border-interne);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-retard: var(--retard);
+  --color-retard-foreground: var(--retard-foreground);
+  --color-attention: var(--attention);
+  --color-attention-foreground: var(--attention-foreground);
+  --color-information: var(--information);
+  --color-information-foreground: var(--information-foreground);
+  --color-conforme: var(--conforme);
+  --color-conforme-foreground: var(--conforme-foreground);
+  --color-neutre: var(--neutre);
+  --color-neutre-foreground: var(--neutre-foreground);
+  --color-destructive: var(--destructive);
   --radius-md: var(--radius);
+  --radius-carte: var(--radius-carte);
+  --radius-petit: var(--radius-petit);
 }
 
 @layer base {
@@ -58,5 +88,12 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  /* Tout chiffre lu en colonne est aligné : montants, dates, compteurs. */
+  th,
+  td,
+  time,
+  output {
+    font-variant-numeric: tabular-nums;
   }
 }

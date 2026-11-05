@@ -40,6 +40,7 @@ make help         # tout le reste
 |---|---|
 | Monorepo | pnpm + Turborepo (`pnpm-workspace.yaml`, `turbo.json`), Biome (`biome.json`), versions des outils dans `mise.toml` |
 | Web (Next.js 16, App Router) | `apps/web` : pages `app/`, actions serveur `app/actions.ts`, routes `app/api/`, composants shadcn/ui `components/ui/`, réglages validés `lib/env.ts` |
+| Design | `docs/systeme-de-design.md` : direction retenue par le client (ADR 0005), jetons dans `apps/web/app/globals.css`, police dans `app/layout.tsx` ; aucune couleur en dur dans un composant |
 | Connexion | `apps/web/auth.ts` (Auth.js, Keycloak côté serveur), `lib/session.ts` (jetons lus par le serveur seul) |
 | Santé | `/api/health`, `/api/health/ready` (`lib/sante.ts` : base et planificateur), `/api/version` ; Caddy les sert aussi en `/health`, `/health/ready`, `/version` |
 | Base | PostgreSQL 17, Drizzle dans `packages/db` (partagé par le web et le worker) : schéma `src/schema.ts`, `creerBase(url, max)`, migrations `drizzle/` jouées au déploiement (service `migrations`) ; le web s'y connecte par `apps/web/lib/base.ts` |

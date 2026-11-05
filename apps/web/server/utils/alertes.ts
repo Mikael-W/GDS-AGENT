@@ -106,11 +106,11 @@ export async function traiterAlerte(
   saisie: SaisieTraitement,
   aujourdhui: string,
   db = base(),
-): Promise<"traitee" | "inconnue"> {
+): Promise<"traitee" | "deja_traitee" | "inconnue"> {
   const trouvee = await chercher(saisie.reference, saisie.famille, aujourdhui, db);
   if (!trouvee) return "inconnue";
 
-  await db
+  const inseres = await db
     .insert(traitementsAlertes)
     .values({
       marcheId: trouvee.marche.id,
@@ -119,6 +119,7 @@ export async function traiterAlerte(
       commentaire: saisie.commentaire,
       traitePar: saisie.traitePar,
     })
-    .onConflictDoNothing();
-  return "traitee";
+    .onConflictDoNothing()
+    .returning({ id: traitementsAlertes.id });
+  return inseres.length > 0 ? "traitee" : "deja_traitee";
 }

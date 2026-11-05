@@ -26,7 +26,7 @@ export type SyntheseMarches = {
   montantNotifie: number;
 };
 
-export const eurosEnCentimes = (montant: string | null): number =>
+const eurosEnCentimes = (montant: string | null): number =>
   montant === null ? 0 : Math.round(Number(montant) * 100);
 
 const sansAccent = (texte: string): string =>
@@ -79,6 +79,10 @@ const euro = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR"
 
 export function formaterMontant(centimes: number): string {
   return euro.format(centimes / 100);
+}
+
+export function formaterMontantEuros(montant: string | null): string {
+  return montant === null ? "Non renseigné" : formaterMontant(eurosEnCentimes(montant));
 }
 
 export function formaterMontantCompact(centimes: number): string {

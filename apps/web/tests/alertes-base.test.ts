@@ -117,7 +117,7 @@ describe.skipIf(!url)("alertes d'échéance lues dans la base de l'agent", () =>
     });
   });
 
-  describe("Given l'alerte de reconduction tacite du marché AO 25075, traitée par un agent", () => {
+  describe("Given l'alerte de reconduction tacite du marché AO 25075", () => {
     const saisie = {
       reference: "AO 25075",
       famille: "reconduction",
@@ -125,7 +125,7 @@ describe.skipIf(!url)("alertes d'échéance lues dans la base de l'agent", () =>
       traitePar: "a1b2c3",
     } as const;
 
-    beforeAll(async () => {
+    async function preparerMarche(champs: Partial<typeof schema.marches.$inferInsert> = {}) {
       await db.delete(schema.engagements);
       await db.delete(schema.marches);
       await db.insert(schema.marches).values({
@@ -136,11 +136,14 @@ describe.skipIf(!url)("alertes d'échéance lues dans la base de l'agent", () =>
         reconductionTacite: true,
         finitLe: "2027-03-04",
         empreinte: EMPREINTE,
+        ...champs,
       });
-    });
+    }
 
-    describe("When on liste les alertes avant le traitement", () => {
-      test("Then l'alerte est à traiter", async () => {
+    describe("When personne ne l'a encore traitée", () => {
+      beforeAll(() => preparerMarche());
+
+      test("Then elle figure dans la liste des alertes à traiter", async () => {
         const alertes = await listerAlertes("2026-11-04", db);
 
         expect(alertes.map((a) => [a.reference, a.famille])).toEqual([
@@ -155,10 +158,15 @@ describe.skipIf(!url)("alertes d'échéance lues dans la base de l'agent", () =>
       });
     });
 
-    describe("When l'agent la marque comme traitée", () => {
-      test("Then le traitement est enregistré", async () => {
-        const issue = await traiterAlerte(saisie, "2026-11-04", db);
+    describe("When un agent la marque comme traitée", () => {
+      let issue: Awaited<ReturnType<typeof traiterAlerte>>;
 
+      beforeAll(async () => {
+        await preparerMarche();
+        issue = await traiterAlerte(saisie, "2026-11-04", db);
+      });
+
+      test("Then le traitement est enregistré", () => {
         expect(issue).toBe("traitee");
       });
 
@@ -173,43 +181,85 @@ describe.skipIf(!url)("alertes d'échéance lues dans la base de l'agent", () =>
 
         expect(detail?.traitement?.commentaire).toBe(saisie.commentaire);
       });
+    });
 
-      test("Then la traiter une seconde fois ne crée pas de doublon", async () => {
-        await traiterAlerte(saisie, "2026-11-05", db);
+    describe("When un collègue veut la traiter après le premier agent", () => {
+      let issue: Awaited<ReturnType<typeof traiterAlerte>>;
 
-        const lignes = await db.select().from(schema.traitementsAlertes);
+      beforeAll(async () => {
+        await preparerMarche();
+        await traiterAlerte(saisie, "2026-11-04", db);
+        issue = await traiterAlerte(
+          { ...saisie, commentaire: "Décision différente.", traitePar: "d4e5f6" },
+          "2026-11-04",
+          db,
+        );
+      });
 
-        expect(lignes).toHaveLength(1);
+      test("Then on lui dit que l'alerte est déjà traitée", () => {
+        expect(issue).toBe("deja_traitee");
+      });
+
+      test("Then la décision du premier agent est conservée", async () => {
+        const traitements = await db.select().from(schema.traitementsAlertes);
+
+        expect(traitements.map((t) => t.commentaire)).toEqual([saisie.commentaire]);
       });
     });
 
     describe("When la date de fin du marché change après le traitement", () => {
-      test("Then une nouvelle alerte apparaît pour la nouvelle échéance", async () => {
+      beforeAll(async () => {
+        await preparerMarche();
+        await traiterAlerte(saisie, "2026-11-04", db);
         await db
           .update(schema.marches)
           .set({ finitLe: "2027-06-04" })
           .where(eq(schema.marches.reference, "AO 25075"));
+      });
 
+      test("Then une nouvelle alerte apparaît pour la nouvelle échéance", async () => {
         const alertes = await listerAlertes("2027-02-10", db);
 
         expect(alertes.map((a) => [a.famille, a.echeanceLe])).toEqual([
           ["reconduction", "2027-02-04"],
         ]);
       });
+
+      test("Then le détail de la nouvelle échéance n'est pas traité", async () => {
+        const detail = await detailAlerte("AO 25075", "reconduction", "2027-02-10", db);
+
+        expect(detail?.traitement).toBeNull();
+      });
     });
-  });
 
-  describe("Given un marché sans alerte en cours", () => {
-    describe("When on demande le détail d'une alerte de garantie qui n'existe pas", () => {
-      test("Then aucune alerte n'est trouvée et rien ne peut être traité", async () => {
-        const detail = await detailAlerte("AO 25075", "garantie", "2026-11-04", db);
-        const issue = await traiterAlerte(
-          { reference: "AO 25075", famille: "garantie", commentaire: "Vu", traitePar: "a1b2c3" },
-          "2026-11-04",
-          db,
-        );
+    describe("When on cherche une alerte de garantie que le marché ne déclenche pas", () => {
+      let detail: Awaited<ReturnType<typeof detailAlerte>>;
+      let issue: Awaited<ReturnType<typeof traiterAlerte>>;
 
+      beforeAll(async () => {
+        await preparerMarche();
+        detail = await detailAlerte("AO 25075", "garantie", "2026-11-04", db);
+        issue = await traiterAlerte({ ...saisie, famille: "garantie" }, "2026-11-04", db);
+      });
+
+      test("Then aucun détail n'existe", () => {
         expect(detail).toBeUndefined();
+      });
+
+      test("Then rien ne peut être traité", () => {
+        expect(issue).toBe("inconnue");
+      });
+    });
+
+    describe("When le marché est soldé alors que sa reconduction approche", () => {
+      let issue: Awaited<ReturnType<typeof traiterAlerte>>;
+
+      beforeAll(async () => {
+        await preparerMarche({ solde: true });
+        issue = await traiterAlerte(saisie, "2026-11-04", db);
+      });
+
+      test("Then l'alerte n'est plus traitable", () => {
         expect(issue).toBe("inconnue");
       });
     });

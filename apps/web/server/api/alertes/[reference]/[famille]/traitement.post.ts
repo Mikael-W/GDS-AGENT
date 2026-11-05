@@ -23,5 +23,11 @@ export default defineEventHandler(async (event) => {
       statusMessage: "Cette alerte n'existe plus : son échéance a peut-être changé.",
     });
   }
+  if (issue === "deja_traitee") {
+    throw createError({
+      statusCode: 409,
+      statusMessage: "Cette alerte a déjà été traitée par un collègue.",
+    });
+  }
   return { ok: true };
 });

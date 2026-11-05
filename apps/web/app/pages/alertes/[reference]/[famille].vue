@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { aujourdhuiParis } from "#shared/domaine/affichage";
+import { jourParis } from "#shared/domaine/affichage";
 import {
   type DetailAlerte,
   formaterDate,
@@ -7,44 +7,44 @@ import {
   libelleEcheance,
   urgence,
 } from "#shared/domaine/alertes";
-import { eurosEnCentimes, formaterMontant } from "#shared/domaine/marches";
+import { formaterMontantEuros } from "#shared/domaine/marches";
 
 definePageMeta({ middleware: "connecte" });
 
 const route = useRoute();
-const reference = String(route.params.reference);
-const famille = String(route.params.famille);
+const racine = `/api/alertes/${encodeURIComponent(String(route.params.reference))}/${String(route.params.famille)}`;
 
-const { data: alerte, error, refresh } = await useFetch<DetailAlerte>(
-  `/api/alertes/${encodeURIComponent(reference)}/${famille}`,
-);
+const { data: alerte, error, refresh } = await useFetch<DetailAlerte>(racine);
 
 useHead({ title: "Alerte - Suivi des marchés" });
 
 const commentaire = ref("");
-const envoi = ref(false);
-const echec = ref("");
+
+const { error: erreurTraitement, status, execute } = useFetch(`${racine}/traitement`, {
+  method: "POST",
+  body: computed(() => ({ commentaire: commentaire.value })),
+  immediate: false,
+  watch: false,
+});
+
+const enCours = computed(() => status.value === "pending");
 
 const traiter = async () => {
-  envoi.value = true;
-  echec.value = "";
-  try {
-    await $fetch(`/api/alertes/${encodeURIComponent(reference)}/${famille}/traitement`, {
-      method: "POST",
-      body: { commentaire: commentaire.value },
-    });
-    await refresh();
-  } catch (e) {
-    echec.value =
-      (e as { statusMessage?: string }).statusMessage ??
-      "Le traitement n'a pas pu être enregistré. Réessayez dans un instant.";
-  } finally {
-    envoi.value = false;
-  }
+  await execute();
+  await refresh();
 };
 
-const montant = computed(() =>
-  alerte.value?.montantInitial ? formaterMontant(eurosEnCentimes(alerte.value.montantInitial)) : "Non renseigné",
+const echec = computed(() =>
+  erreurTraitement.value
+    ? (erreurTraitement.value.statusMessage ??
+      "Le traitement n'a pas pu être enregistré. Réessayez dans un instant.")
+    : "",
+);
+
+const messageChargement = computed(() =>
+  error.value?.statusCode === 404
+    ? "Cette alerte n'existe plus : son échéance a peut-être changé. Revenez à la liste des alertes."
+    : "Cette alerte n'a pas pu être chargée. Réessayez dans un instant.",
 );
 </script>
 
@@ -53,7 +53,7 @@ const montant = computed(() =>
     <NuxtLink to="/alertes" class="retour">Retour aux alertes</NuxtLink>
 
     <p v-if="error" role="alert" class="erreur">
-      Cette alerte n'existe plus : son échéance a peut-être changé. Revenez à la liste des alertes.
+      {{ messageChargement }}
     </p>
 
     <template v-else-if="alerte">
@@ -97,7 +97,7 @@ const montant = computed(() =>
             <dt>Fin du marché</dt>
             <dd>{{ formaterDate(alerte.finitLe) }}</dd>
             <dt>Montant initial</dt>
-            <dd>{{ montant }}</dd>
+            <dd>{{ formaterMontantEuros(alerte.montantInitial) }}</dd>
             <dt>Marché soldé</dt>
             <dd>{{ alerte.solde ? "Oui" : "Non" }}</dd>
           </dl>
@@ -109,7 +109,7 @@ const montant = computed(() =>
 
         <template v-if="alerte.traitement">
           <p class="discret">
-            Traitée le {{ formaterDate(aujourdhuiParis(new Date(alerte.traitement.traiteLe))) }}.
+            Traitée le {{ formaterDate(jourParis(new Date(alerte.traitement.traiteLe))) }}.
           </p>
           <p class="decision">{{ alerte.traitement.commentaire }}</p>
         </template>
@@ -127,7 +127,7 @@ const montant = computed(() =>
           />
           <p v-if="echec" role="alert" class="erreur">{{ echec }}</p>
           <div>
-            <Bouton type="submit" :disabled="envoi || commentaire.trim() === ''">
+            <Bouton type="submit" :disabled="enCours || commentaire.trim() === ''">
               Marquer comme traité
             </Bouton>
           </div>

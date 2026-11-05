@@ -5,6 +5,7 @@ import { eq, sql } from "drizzle-orm";
 import { base } from "./base";
 import { type ContratCiril, getAccessList, getContrats, urlFinancesDepuisAcces } from "./ciril";
 import { env } from "./env";
+import { journaliser } from "./synchronisations";
 
 /** AAAA-MM-JJ ou AAAAMMJJ CIRIL → ISO AAAA-MM-JJ ; autre valeur → null. */
 function enDate(v: string | undefined): string | null {
@@ -81,9 +82,11 @@ export type ResultatSynchro = {
  * contrats, et fait un upsert par `reference`. `luLe` est écrit à chaque
  * passage, `empreinte` permet de compter ce qui a vraiment bougé.
  */
-export async function synchroniserDepuisCiril(
-  opts: { requete?: string } = {},
-): Promise<ResultatSynchro> {
+export function synchroniserDepuisCiril(opts: { requete?: string } = {}): Promise<ResultatSynchro> {
+  return journaliser(() => recopierMarches(opts));
+}
+
+async function recopierMarches(opts: { requete?: string }): Promise<ResultatSynchro> {
   const e = env();
   if (!e.CIRIL_URL || !e.CIRIL_UTILISATEUR || !e.CIRIL_MOT_DE_PASSE) {
     throw new Error("CIRIL_URL, CIRIL_UTILISATEUR et CIRIL_MOT_DE_PASSE requis");

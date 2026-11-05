@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { exigerBattementRecent, SILENCE_PLANIFICATEUR_MS, verifier } from "@/lib/sante";
+import { exigerBattementRecent, SILENCE_PLANIFICATEUR_MS, verifier } from "@/server/utils/sante";
 
 describe("/health/ready", () => {
   it("est prêt quand tous les contrôles passent", async () => {

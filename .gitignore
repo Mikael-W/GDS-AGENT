@@ -14,12 +14,15 @@ sauvegardes/
 *.dump
 *.sql.gz
 
+# Doc API CIRIL (WSDL, exemples) : fournie par le client, hors Git.
+apps/web/ciril-sandbox/
+
 # Dépendances et constructions
 node_modules/
-.next/
+.nuxt/
+.output/
 dist/
 .turbo/
-next-env.d.ts
 *.tsbuildinfo
 .venv/
 __pycache__/
@@ -32,3 +35,6 @@ __pycache__/
 .idea/
 .vscode/
 *.log
+
+# Guide auto-écrit par Turborepo pour les agents IA, non pertinent en Git.
+AGENTS.md

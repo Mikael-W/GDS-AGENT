@@ -1,7 +1,7 @@
 import { MockLanguageModelV3 } from "ai/test";
 import { describe, expect, it } from "vitest";
 
-import { prompt, repondre } from "@/lib/llm";
+import { prompt, repondre } from "@/server/utils/llm";
 
 describe("LLM", () => {
   it("lit le prompt hors du code et remplace ses variables", async () => {

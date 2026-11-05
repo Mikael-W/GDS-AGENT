@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { lireEnv, SECRET_DE_DEV } from "@/lib/env";
+import { lireEnv, SECRET_DE_DEV } from "@/server/utils/env";
 
 const base = {
   AUTH_KEYCLOAK_ISSUER: "https://auth.exemple.test/realms/client",

@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { type Alerte, evaluer, evaluerPortefeuille, type MarcheSuivi } from "@/lib/echeances";
+import {
+  type Alerte,
+  evaluer,
+  evaluerPortefeuille,
+  type MarcheSuivi,
+} from "@/server/utils/echeances";
 
 const BASE: MarcheSuivi = {
   reference: "M-2026-001",

@@ -1,6 +1,6 @@
 import { expect, it } from "vitest";
 
-import { repondre } from "@/lib/llm";
+import { repondre } from "@/server/utils/llm";
 
 /** LLM : le modèle configuré répond. Ignoré (et listé) si le secret manque. */
 const secrets = ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"];

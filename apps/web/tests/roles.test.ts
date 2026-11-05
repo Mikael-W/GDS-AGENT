@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { roleDepuisJeton } from "@/lib/roles";
+import { roleDepuisJeton } from "@/server/utils/roles";
 
 function jeton(contenu: object): string {
   return `entete.${Buffer.from(JSON.stringify(contenu)).toString("base64url")}.signature`;

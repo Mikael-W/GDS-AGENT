@@ -14,6 +14,8 @@
       "**/*.json",
       "!**/schema.d.ts",
       "!**/drizzle/meta",
+      "!apps/web/.nuxt",
+      "!apps/web/.output",
       "!apps/api"
     ]
   },
@@ -37,9 +39,9 @@
           "level": "error",
           "options": {
             "paths": {
-              "ai": "LLM : passer par le client unique (apps/web/lib/llm.ts), qui trace les coûts et applique les limites.",
-              "@ai-sdk/amazon-bedrock": "LLM : passer par le client unique (apps/web/lib/llm.ts), qui trace les coûts et applique les limites.",
-              "@ai-sdk/openai-compatible": "LLM : passer par le client unique (apps/web/lib/llm.ts), qui trace les coûts et applique les limites."
+              "ai": "LLM : passer par le client unique (apps/web/server/utils/llm.ts), qui trace les coûts et applique les limites.",
+              "@ai-sdk/amazon-bedrock": "LLM : passer par le client unique (apps/web/server/utils/llm.ts), qui trace les coûts et applique les limites.",
+              "@ai-sdk/openai-compatible": "LLM : passer par le client unique (apps/web/server/utils/llm.ts), qui trace les coûts et applique les limites."
             }
           }
         }
@@ -55,11 +57,21 @@
   },
   "overrides": [
     {
-      "includes": ["apps/web/lib/llm.ts"],
+      "includes": ["apps/web/server/utils/llm.ts"],
       "linter": {
         "rules": {
           "style": {
             "noRestrictedImports": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["apps/web/server/utils/ciril.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedGlobals": "off"
           }
         }
       }

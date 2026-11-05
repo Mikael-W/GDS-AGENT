@@ -2,7 +2,7 @@ import { creerBase, schema } from "@projet/db";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { enregistrer, renommer, trouver } from "@/lib/utilisateurs";
+import { enregistrer, renommer, trouver } from "@/server/utils/utilisateurs";
 
 const url = process.env.TEST_DATABASE_URL;
 

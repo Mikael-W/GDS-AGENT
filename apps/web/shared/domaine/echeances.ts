@@ -178,3 +178,17 @@ export function evaluerPortefeuille(
     .flatMap((m) => evaluer(m, aujourdHui, fenetres))
     .sort((a, b) => a.joursRestants - b.joursRestants);
 }
+
+export const HORIZON_ECHEANCIER = 183;
+
+export function evaluerEcheancier(
+  marches: MarcheSuivi[],
+  aujourdHui: string,
+  horizonJours: number = HORIZON_ECHEANCIER,
+  fenetres: Fenetres = FENETRES,
+): Alerte[] {
+  const horizon = ajouter(aujourdHui, horizonJours);
+  return evaluerPortefeuille(marches, horizon, fenetres)
+    .filter((a) => a.echeanceLe <= horizon)
+    .map((a) => ({ ...a, joursRestants: ecart(aujourdHui, a.echeanceLe) }));
+}

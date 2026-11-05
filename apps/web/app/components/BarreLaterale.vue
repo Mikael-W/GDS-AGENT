@@ -12,6 +12,7 @@
       <ElementNavigation libelle="Tableau de bord" route="/tableau-de-bord" />
       <ElementNavigation libelle="Alertes" route="/alertes" />
       <ElementNavigation libelle="Marchés" route="/marches" />
+      <ElementNavigation libelle="Échéancier" route="/echeancier" />
     </nav>
 
     <div class="pied">

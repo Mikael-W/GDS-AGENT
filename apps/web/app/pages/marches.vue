@@ -8,6 +8,7 @@ import {
   type MarcheListe,
   montantNotifie,
   paginer,
+  pluriel,
   services,
   synthese,
 } from "#shared/domaine/marches";
@@ -16,7 +17,9 @@ definePageMeta({ middleware: "connecte" });
 
 useHead({ title: "Marchés - Suivi des marchés" });
 
-const aujourdhui = new Date().toLocaleDateString("fr-CA", { timeZone: "Europe/Paris" });
+const aujourdhui = useState("aujourdhui", () =>
+  new Date().toLocaleDateString("fr-CA", { timeZone: "Europe/Paris" }),
+);
 
 const { data: marches, error } = await useFetch<MarcheListe[]>("/api/marches", {
   default: () => [],
@@ -31,16 +34,22 @@ watch([recherche, service, etat], () => {
   numeroPage.value = 1;
 });
 
-const resume = computed(() => synthese(marches.value, aujourdhui));
+const resume = computed(() => synthese(marches.value, aujourdhui.value));
 const servicesProposes = computed(() => services(marches.value));
 const page = computed(() =>
   paginer(
-    filtrer(marches.value, { recherche: recherche.value, service: service.value, etat: etat.value }, aujourdhui),
+    filtrer(marches.value, { recherche: recherche.value, service: service.value, etat: etat.value }, aujourdhui.value),
     numeroPage.value,
   ),
 );
 
-const pluriel = (nombre: number, mot: string) => `${nombre} ${mot}${nombre > 1 ? "s" : ""}`;
+
+const precedente = () => {
+  numeroPage.value = page.value.page - 1;
+};
+const suivante = () => {
+  numeroPage.value = page.value.page + 1;
+};
 </script>
 
 <template>
@@ -68,6 +77,7 @@ const pluriel = (nombre: number, mot: string) => `${nombre} ${mot}${nombre > 1 ?
       La liste des marchés n'a pas pu être chargée. Réessayez dans un instant.
     </p>
 
+    <template v-else>
     <section aria-label="Chiffres clés" class="chiffres">
       <CarteChiffre libelle="Marchés en cours" :valeur="String(resume.actifs)" />
       <CarteChiffre libelle="Lots suivis" :valeur="String(resume.lots)" />
@@ -122,19 +132,21 @@ const pluriel = (nombre: number, mot: string) => `${nombre} ${mot}${nombre > 1 ?
       <p v-if="page.total === 0" class="vide">Aucun marché ne correspond à ces critères.</p>
 
       <footer class="liste__pied">
-        <p class="discret">
-          {{ pluriel(page.lignes.length, "marché") }} affiché{{ page.lignes.length > 1 ? "s" : "" }} sur {{ page.total }}
+        <p class="discret" aria-live="polite">
+          Marchés affichés : {{ page.lignes.length }} sur {{ page.total }}
         </p>
         <nav aria-label="Pagination" class="pagination">
-          <Bouton variante="contour" taille="petit" :disabled="page.page <= 1" @click="numeroPage = page.page - 1">
+          <Bouton variante="contour" taille="petit" :disabled="page.page <= 1" @click="precedente">
             Précédent
           </Bouton>
-          <Bouton variante="contour" taille="petit" :disabled="page.page >= page.pages" @click="numeroPage = page.page + 1">
+          <p class="discret">Page {{ page.page }} sur {{ page.pages }}</p>
+          <Bouton variante="contour" taille="petit" :disabled="page.page >= page.pages" @click="suivante">
             Suivant
           </Bouton>
         </nav>
       </footer>
     </section>
+    </template>
   </div>
 </template>
 
@@ -265,6 +277,7 @@ const pluriel = (nombre: number, mot: string) => `${nombre} ${mot}${nombre > 1 ?
 
 .pagination {
   display: flex;
-  gap: 0.5rem;
+  align-items: center;
+  gap: 0.75rem;
 }
 </style>

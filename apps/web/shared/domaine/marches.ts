@@ -9,6 +9,8 @@ export type MarcheListe = {
   finitLe: string | null;
   montantInitial: string | null;
   montantAvenants: string | null;
+  actif: boolean;
+  solde: boolean;
   lots: number;
 };
 
@@ -47,7 +49,12 @@ export function montantNotifie(marche: MarcheListe): number {
 }
 
 export function estEnCours(marche: MarcheListe, aujourdhui: string): boolean {
+  if (!marche.actif || marche.solde) return false;
   return marche.finitLe === null || marche.finitLe >= aujourdhui;
+}
+
+export function pluriel(nombre: number, mot: string): string {
+  return `${nombre} ${mot}${nombre > 1 ? "s" : ""}`;
 }
 
 export function synthese(marches: MarcheListe[], aujourdhui: string): SyntheseMarches {

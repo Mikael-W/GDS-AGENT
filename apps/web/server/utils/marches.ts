@@ -15,6 +15,8 @@ export async function listerMarches(db = base()): Promise<MarcheListe[]> {
       finitLe: marches.finitLe,
       montantInitial: marches.montantInitial,
       montantAvenants: marches.montantAvenants,
+      actif: marches.actif,
+      solde: marches.solde,
       lots: count(lots.id),
     })
     .from(marches)

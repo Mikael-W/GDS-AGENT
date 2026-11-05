@@ -9,6 +9,7 @@ import {
   type MarcheListe,
   montantNotifie,
   paginer,
+  pluriel,
   services,
   synthese,
   TAILLE_PAGE,
@@ -26,6 +27,8 @@ function marche(champs: Partial<MarcheListe> = {}): MarcheListe {
     finitLe: "2027-12-01",
     montantInitial: "559200.00",
     montantAvenants: null,
+    actif: true,
+    solde: false,
     lots: 1,
     ...champs,
   };
@@ -90,6 +93,52 @@ describe("marché en cours", () => {
         const enCours = estEnCours(m, aujourdhui);
 
         expect(enCours).toBe(true);
+      });
+    });
+  });
+
+  describe("Given un marché désactivé dans CIRIL, dont la date de fin n'est pas atteinte", () => {
+    describe("When on regarde s'il est en cours", () => {
+      test("Then il n'est pas en cours", () => {
+        const m = marche({ actif: false });
+
+        const enCours = estEnCours(m, aujourdhui);
+
+        expect(enCours).toBe(false);
+      });
+    });
+  });
+
+  describe("Given un marché soldé, dont la date de fin n'est pas atteinte", () => {
+    describe("When on regarde s'il est en cours", () => {
+      test("Then il n'est pas en cours", () => {
+        const m = marche({ solde: true });
+
+        const enCours = estEnCours(m, aujourdhui);
+
+        expect(enCours).toBe(false);
+      });
+    });
+  });
+});
+
+describe("accord au pluriel", () => {
+  describe("Given un seul marché", () => {
+    describe("When on formule le nombre", () => {
+      test("Then le mot reste au singulier", () => {
+        const libelle = pluriel(1, "marché");
+
+        expect(libelle).toBe("1 marché");
+      });
+    });
+  });
+
+  describe("Given trois marchés", () => {
+    describe("When on formule le nombre", () => {
+      test("Then le mot prend un s", () => {
+        const libelle = pluriel(3, "marché");
+
+        expect(libelle).toBe("3 marchés");
       });
     });
   });

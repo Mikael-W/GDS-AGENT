@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { paginer, pluriel } from "#shared/domaine/affichage";
+import { paginer } from "#shared/domaine/affichage";
 import {
   type AlerteListe,
-  estDepassee,
   filtrer,
   formaterDate,
   LIBELLES_FAMILLE,
@@ -10,6 +9,7 @@ import {
   type PeriodeAlertes,
   services,
   synthese,
+  titreListe,
   urgence,
   type VueAlertes,
 } from "#shared/domaine/alertes";
@@ -88,7 +88,7 @@ const suivante = () => {
 
       <section class="liste">
         <div class="liste__entete">
-          <h2 class="titre-carte">{{ pluriel(page.total, "alerte") }} à traiter</h2>
+          <h2 class="titre-carte">{{ titreListe(vue, page.total) }}</h2>
           <label for="service" class="visuellement-cache">Service</label>
           <select id="service" v-model="service" class="filtre">
             <option value="">Tous les services</option>
@@ -97,8 +97,8 @@ const suivante = () => {
           <label for="periode" class="visuellement-cache">Période</label>
           <select id="periode" v-model="periode" class="filtre">
             <option value="toutes">Toutes les périodes</option>
-            <option value="30">Dans les 30 jours</option>
-            <option value="90">Dans les 90 jours</option>
+            <option value="30">Dépassées ou sous 30 jours</option>
+            <option value="90">Dépassées ou sous 90 jours</option>
           </select>
           <label for="famille" class="visuellement-cache">Type d'alerte</label>
           <select id="famille" v-model="famille" class="filtre">
@@ -122,7 +122,7 @@ const suivante = () => {
               <tr v-for="a in page.lignes" :key="`${a.reference}-${a.famille}`">
                 <td>
                   <p class="echeance">{{ formaterDate(a.echeanceLe) }}</p>
-                  <p :class="['delai', { 'delai--retard': estDepassee(a), 'delai--bientot': urgence(a) === 'attention' }]">
+                  <p :class="`delai delai--${urgence(a)}`">
                     {{ libelleEcheance(a.joursRestants) }}
                   </p>
                 </td>
@@ -271,7 +271,7 @@ const suivante = () => {
   color: var(--muted-foreground);
 }
 
-.delai--bientot {
+.delai--attention {
   color: var(--attention-foreground);
 }
 

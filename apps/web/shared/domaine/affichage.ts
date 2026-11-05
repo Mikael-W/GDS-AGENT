@@ -22,3 +22,7 @@ export function paginer<T>(elements: T[], page: number): Page<T> {
 export function pluriel(nombre: number, mot: string): string {
   return `${nombre} ${mot}${nombre > 1 ? "s" : ""}`;
 }
+
+export function aujourdhuiParis(maintenant: Date = new Date()): string {
+  return maintenant.toLocaleDateString("fr-CA", { timeZone: "Europe/Paris" });
+}

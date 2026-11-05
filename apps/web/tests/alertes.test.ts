@@ -8,6 +8,7 @@ import {
   libelleEcheance,
   services,
   synthese,
+  titreListe,
   urgence,
 } from "@/shared/domaine/alertes";
 
@@ -229,6 +230,38 @@ describe("date affichée", () => {
         const texte = formaterDate("2026-09-18");
 
         expect(texte).toBe("18/09/2026");
+      });
+    });
+  });
+});
+
+describe("titre de la liste", () => {
+  describe("Given l'onglet À traiter avec six alertes", () => {
+    describe("When on formule le titre", () => {
+      test("Then on lit six alertes à traiter", () => {
+        const titre = titreListe("a_traiter", 6);
+
+        expect(titre).toBe("6 alertes à traiter");
+      });
+    });
+  });
+
+  describe("Given l'onglet Dont dépassées avec deux alertes", () => {
+    describe("When on formule le titre", () => {
+      test("Then on lit deux alertes dépassées, accordées au pluriel", () => {
+        const titre = titreListe("depassees", 2);
+
+        expect(titre).toBe("2 alertes dépassées");
+      });
+    });
+  });
+
+  describe("Given l'onglet Dont dépassées avec une seule alerte", () => {
+    describe("When on formule le titre", () => {
+      test("Then on lit une alerte dépassée, au singulier", () => {
+        const titre = titreListe("depassees", 1);
+
+        expect(titre).toBe("1 alerte dépassée");
       });
     });
   });

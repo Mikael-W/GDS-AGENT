@@ -1,3 +1,4 @@
+import { pluriel } from "./affichage";
 import type { Alerte, Famille } from "./echeances";
 
 export type AlerteListe = Alerte & {
@@ -59,6 +60,11 @@ export function filtrer(alertes: AlerteListe[], criteres: CriteresAlertes): Aler
     if (criteres.periode !== "toutes" && a.joursRestants > Number(criteres.periode)) return false;
     return true;
   });
+}
+
+export function titreListe(vue: VueAlertes, total: number): string {
+  const complement = vue === "depassees" ? "dépassée" : "à traiter";
+  return `${pluriel(total, "alerte")} ${complement}${vue === "depassees" && total > 1 ? "s" : ""}`;
 }
 
 export function libelleEcheance(joursRestants: number): string {

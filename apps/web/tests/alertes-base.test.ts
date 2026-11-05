@@ -67,6 +67,34 @@ describe.skipIf(!url)("alertes d'échéance lues dans la base de l'agent", () =>
     });
   });
 
+  describe("Given deux marchés à échéance, l'un sans objet ni service, l'autre complet", () => {
+    beforeAll(async () => {
+      await db.delete(schema.engagements);
+      await db.delete(schema.marches);
+      await db.insert(schema.marches).values([
+        { reference: "MA 24007", finitLe: "2026-11-20", empreinte: EMPREINTE },
+        {
+          reference: "MA 24036",
+          objet: "Travaux de génie civil, station de relevage",
+          service: "Travaux",
+          finitLe: "2026-11-25",
+          empreinte: EMPREINTE,
+        },
+      ]);
+    });
+
+    describe("When on liste les alertes au 4 novembre 2026", () => {
+      test("Then chaque alerte garde l'objet et le service de son propre marché", async () => {
+        const alertes = await listerAlertes("2026-11-04", db);
+
+        expect(alertes.map((a) => [a.reference, a.objet, a.service])).toEqual([
+          ["MA 24007", null, null],
+          ["MA 24036", "Travaux de génie civil, station de relevage", "Travaux"],
+        ]);
+      });
+    });
+  });
+
   describe("Given un marché soldé dont la date de fin approche", () => {
     beforeAll(async () => {
       await db.delete(schema.engagements);

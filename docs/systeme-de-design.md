@@ -2,7 +2,7 @@
 
 Direction visuelle retenue par le client le 05/11/2026 : « application claire » (piste 2 sur les trois proposées). Décision : [ADR 0005](adr/0005-direction-visuelle-application-claire.md).
 
-Maquettes de référence, treize écrans : <https://claude.ai/artifact/DThmvw9QV3zV9cALLSyJbi> (privées tant qu'elles ne sont pas partagées depuis le menu Partager de la page).
+Maquettes de référence, quatorze écrans : <https://claude.ai/artifact/DThmvw9QV3zV9cALLSyJbi> (privées tant qu'elles ne sont pas partagées depuis le menu Partager de la page).
 
 Les jetons vivent dans `apps/web/app/globals.css` et nulle part ailleurs. Une couleur écrite en dur dans un composant est un défaut, au même titre qu'un `TODO` laissé en place.
 
@@ -121,17 +121,22 @@ Treize écrans sont maquettés. Les fichiers portent le nom de l'artboard sur le
 |---|---|---|
 | Connexion | Socle | Entrée par le portail de la collectivité, sans mot de passe saisi dans l'application |
 | Tableau de bord | Toutes | Quatre chiffres cliquables, les marchés suivis, la charge par service |
-| Alertes | 1 à 3 | Liste par urgence, cycle de vie à traiter, traitée, écartée |
-| Détail d'une alerte | 1 à 3 | La règle, le calcul pas à pas, les données lues dans CIRIL, l'historique |
-| Marchés | Socle | Le portefeuille, l'état de la formule de révision |
-| Fiche marché | Socle | Identité, montants, avenants, alertes ouvertes, factures rattachées |
-| Échéancier | 1 | Six mois à venir, mois par mois |
-| Avances | 2 | Avancement vers le seuil, détail des mandats retenus et écartés |
-| Indices et révisions | 3 | Séries INSEE suivies, révisions à venir et coefficient proposé |
+| Alertes | 1 | Liste par urgence, les cinq familles retenues, statut à traiter ou traité |
+| Détail d'une alerte | 1 | La donnée et la clause qui ont déclenché, les éléments de décision, le traitement, l'historique |
+| Marchés | Socle | Le portefeuille, typologie, forme des prix, état de la formule de variation |
+| Fiche marché | Socle | Identité au sens CIRIL, montants, avenants, alertes ouvertes, factures rattachées |
+| Échéancier | 1 | Six mois à venir, mois par mois, relances comprises |
+| Récupération d'avance | 2 | Taux, seuils de début et de fin, base de l'avancement, détail des mandats comptés |
+| Index et révisions | 3 | Index INSEE suivis, révisions à venir, coefficient du titulaire et coefficient recalculé |
+| Vérification d'une révision | 3 | La clause, le calcul pas à pas avec décalage et arrondi, la concordance avec le titulaire |
 | Dépôt d'un CCAP | 4 | Dépôt du document, état de la lecture, avancement de la reprise du stock |
-| Relecture du pré-remplissage | 4 | Champ par champ, avec l'extrait source en regard |
-| Factures | 5 | Écarts entre facture, engagement et marché (livraison janvier 2027) |
+| Relecture de la fiche | 4 | Champ par champ dans l'ordre de saisie CIRIL, avec l'extrait source en regard |
+| Contrôles des factures | 5 | Écarts entre facture, engagement et marché (livraison janvier 2027) |
 | Synchronisation CIRIL | Socle | Journal des synchronisations, état des accès |
+
+Les cinq familles d'alerte sont celles retenues en atelier : reconduction, réception manquante, retenue de garantie, absence de bon de commande, point à six mois. Les écrans n'en inventent pas d'autres, et la révision de prix, qui a son propre écran, n'en fait pas partie.
+
+Les données affichées dans les maquettes sont illustratives : les codes de marché sont réels (MA 26045, AO 25075, MA 24036), les titulaires sont anonymisés et les montants inventés.
 
 ## Ce qui n'est pas dans le système
 

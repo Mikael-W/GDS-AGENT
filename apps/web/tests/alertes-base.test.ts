@@ -237,7 +237,7 @@ describe.skipIf(!url)("alertes d'échéance lues dans la base de l'agent", () =>
       });
     });
 
-    describe("When on consulte l'échéancier en novembre 2026 après un traitement et un changement de date", () => {
+    describe("When on consulte l'échéancier en novembre 2026", () => {
       let echeances: Awaited<ReturnType<typeof listerEcheances>>;
 
       beforeAll(async () => {

@@ -190,6 +190,5 @@ export function evaluerEcheancier(
   const horizon = ajouter(aujourdHui, horizonJours);
   return evaluerPortefeuille(marches, horizon, fenetres)
     .filter((a) => a.echeanceLe <= horizon)
-    .map((a) => ({ ...a, joursRestants: ecart(aujourdHui, a.echeanceLe) }))
-    .sort((a, b) => a.echeanceLe.localeCompare(b.echeanceLe));
+    .map((a) => ({ ...a, joursRestants: ecart(aujourdHui, a.echeanceLe) }));
 }

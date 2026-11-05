@@ -217,5 +217,14 @@ const groupes = computed(() =>
   .ligne {
     grid-template-columns: 2.5rem 1fr;
   }
+
+  .marche,
+  .delai {
+    grid-column: 1 / -1;
+  }
+
+  .delai {
+    text-align: left;
+  }
 }
 </style>

@@ -214,4 +214,41 @@ describe("échéancier des six prochains mois", () => {
       });
     });
   });
+
+  describe("Given un marché à bons de commande sans aucun bon depuis plus de 90 jours", () => {
+    describe("When on projette l'échéancier au 4 novembre 2026", () => {
+      test("Then l'échéance reste affichée, dépassée depuis aujourd'hui et non depuis l'horizon", () => {
+        const m = marche({ aBonsDeCommande: true, debuteLe: "2026-06-01" });
+
+        const echeances = evaluerEcheancier([m], "2026-11-04");
+
+        const sansBon = echeances.filter((a) => a.famille === "sans_bon_de_commande");
+        expect(sansBon.map((a) => [a.echeanceLe, a.joursRestants])).toEqual([["2026-08-30", -66]]);
+      });
+    });
+  });
+
+  describe("Given une garantie qui prend fin exactement au dernier jour de l'horizon", () => {
+    describe("When on projette l'échéancier au 4 novembre 2026", () => {
+      test("Then elle est incluse, 183 jours plus tard", () => {
+        const m = marche({ garantieFinitLe: "2027-05-06" });
+
+        const echeances = evaluerEcheancier([m], "2026-11-04");
+
+        expect(echeances.map((a) => [a.famille, a.joursRestants])).toEqual([["garantie", 183]]);
+      });
+    });
+  });
+
+  describe("Given une garantie qui prend fin le lendemain du dernier jour de l'horizon", () => {
+    describe("When on projette l'échéancier au 4 novembre 2026", () => {
+      test("Then elle n'y figure pas encore", () => {
+        const m = marche({ garantieFinitLe: "2027-05-07" });
+
+        const echeances = evaluerEcheancier([m], "2026-11-04");
+
+        expect(echeances).toEqual([]);
+      });
+    });
+  });
 });

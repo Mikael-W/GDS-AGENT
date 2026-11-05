@@ -14,7 +14,7 @@ function alerte(champs: Partial<AlerteListe> = {}): AlerteListe {
     reference: "AO 25075",
     echeanceLe: "2026-11-09",
     joursRestants: 4,
-    explication: "Reconduction tacite au 09/12/2026.",
+    explication: "Reconduction tacite au 04/03/2027 : sans décision contraire, le marché repart.",
     objet: "Entretien des espaces verts et des abords",
     service: "Espaces verts",
     ...champs,
@@ -88,7 +88,18 @@ describe("échéances regroupées par mois", () => {
   describe("Given des échéances données dans le désordre", () => {
     describe("When on les regroupe", () => {
       test("Then l'ordre des mois suit le calendrier", () => {
-        const groupes = grouperParMois([echeances[4] as AlerteListe, echeances[0] as AlerteListe]);
+        const janvier = alerte({
+          reference: "AO 26028",
+          echeanceLe: "2027-01-05",
+          joursRestants: 61,
+        });
+        const novembre = alerte({
+          reference: "AO 24034",
+          echeanceLe: "2026-11-04",
+          joursRestants: -1,
+        });
+
+        const groupes = grouperParMois([janvier, novembre]);
 
         expect(groupes.map((g) => g.mois)).toEqual(["2026-11", "2027-01"]);
       });

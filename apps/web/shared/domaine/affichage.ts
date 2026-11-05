@@ -23,6 +23,10 @@ export function pluriel(nombre: number, mot: string): string {
   return `${nombre} ${mot}${nombre > 1 ? "s" : ""}`;
 }
 
-export function aujourdhuiParis(maintenant: Date = new Date()): string {
-  return maintenant.toLocaleDateString("fr-CA", { timeZone: "Europe/Paris" });
+export function jourParis(instant: Date): string {
+  return instant.toLocaleDateString("fr-CA", { timeZone: "Europe/Paris" });
+}
+
+export function aujourdhuiParis(): string {
+  return jourParis(new Date());
 }

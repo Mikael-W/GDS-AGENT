@@ -4,6 +4,7 @@ import {
   filtrer,
   formaterMontant,
   formaterMontantCompact,
+  formaterMontantEuros,
   formaterPeriode,
   type MarcheListe,
   montantNotifie,
@@ -312,6 +313,28 @@ describe("présentation des montants et des périodes", () => {
         const texte = formaterPeriode(null, null);
 
         expect(texte).toBe("Non renseignée");
+      });
+    });
+  });
+});
+
+describe("montant initial d'un marché dans le détail d'une alerte", () => {
+  describe("Given un montant initial de 186 400 euros", () => {
+    describe("When on l'affiche", () => {
+      test("Then il est écrit en euros", () => {
+        const texte = formaterMontantEuros("186400.00");
+
+        expect(texte).toBe(formaterMontant(18_640_000));
+      });
+    });
+  });
+
+  describe("Given un marché sans montant initial dans CIRIL", () => {
+    describe("When on l'affiche", () => {
+      test("Then on lit qu'il n'est pas renseigné", () => {
+        const texte = formaterMontantEuros(null);
+
+        expect(texte).toBe("Non renseigné");
       });
     });
   });

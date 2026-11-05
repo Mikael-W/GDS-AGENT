@@ -81,6 +81,10 @@ export function formaterMontant(centimes: number): string {
   return euro.format(centimes / 100);
 }
 
+export function formaterMontantEuros(montant: string | null): string {
+  return montant === null ? "Non renseigné" : formaterMontant(eurosEnCentimes(montant));
+}
+
 export function formaterMontantCompact(centimes: number): string {
   const euros = centimes / 100;
   if (euros < 1_000_000) return formaterMontant(centimes);

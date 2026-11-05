@@ -6,6 +6,7 @@ import {
   filtrer,
   formaterDate,
   libelleEcheance,
+  lienAlerte,
   services,
   synthese,
   titreListe,
@@ -262,6 +263,32 @@ describe("titre de la liste", () => {
         const titre = titreListe("depassees", 1);
 
         expect(titre).toBe("1 alerte dépassée");
+      });
+    });
+  });
+});
+
+describe("date absente dans CIRIL", () => {
+  describe("Given un marché dont la date de notification n'est pas renseignée", () => {
+    describe("When on la formate", () => {
+      test("Then on lit qu'elle n'est pas renseignée", () => {
+        const texte = formaterDate(null);
+
+        expect(texte).toBe("Non renseignée");
+      });
+    });
+  });
+});
+
+describe("lien vers le détail d'une alerte", () => {
+  describe("Given l'alerte de reconduction du marché AO 25075", () => {
+    describe("When on construit son lien", () => {
+      test("Then la référence est protégée pour l'adresse et la famille suit", () => {
+        const a = alerte({ reference: "AO 25075", famille: "reconduction" });
+
+        const lien = lienAlerte(a);
+
+        expect(lien).toBe("/alertes/AO%2025075/reconduction");
       });
     });
   });

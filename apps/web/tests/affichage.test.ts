@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import { aujourdhuiParis, paginer, pluriel, TAILLE_PAGE } from "@/shared/domaine/affichage";
+import { jourParis, paginer, pluriel, TAILLE_PAGE } from "@/shared/domaine/affichage";
 
 describe("accord au pluriel", () => {
   describe("Given un seul marché", () => {
@@ -63,13 +63,13 @@ describe("pagination d'une liste", () => {
   });
 });
 
-describe("date du jour à Paris", () => {
+describe("jour civil à Paris", () => {
   describe("Given 23 h 30 à Greenwich le 4 novembre 2026, soit minuit passé à Paris", () => {
-    describe("When on demande la date du jour", () => {
+    describe("When on demande le jour civil à Paris", () => {
       test("Then c'est déjà le 5 novembre", () => {
-        const maintenant = new Date("2026-11-04T23:30:00Z");
+        const instant = new Date("2026-11-04T23:30:00Z");
 
-        const date = aujourdhuiParis(maintenant);
+        const date = jourParis(instant);
 
         expect(date).toBe("2026-11-05");
       });
@@ -77,11 +77,11 @@ describe("date du jour à Paris", () => {
   });
 
   describe("Given 22 h 30 à Greenwich le 4 novembre 2026, soit 23 h 30 à Paris", () => {
-    describe("When on demande la date du jour", () => {
+    describe("When on demande le jour civil à Paris", () => {
       test("Then c'est encore le 4 novembre", () => {
-        const maintenant = new Date("2026-11-04T22:30:00Z");
+        const instant = new Date("2026-11-04T22:30:00Z");
 
-        const date = aujourdhuiParis(maintenant);
+        const date = jourParis(instant);
 
         expect(date).toBe("2026-11-04");
       });

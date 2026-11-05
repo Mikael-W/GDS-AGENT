@@ -15,6 +15,13 @@
       "when": 1793787849674,
       "tag": "0001_referentiel_marches",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793903788695,
+      "tag": "0002_traitements_alertes",
+      "breakpoints": true
     }
   ]
 }

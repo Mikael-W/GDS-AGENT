@@ -1,5 +1,5 @@
 <script setup lang="ts">
-definePageMeta({ middleware: "anonyme" });
+definePageMeta({ layout: false, middleware: "anonyme" });
 
 useHead({ title: "Connexion - Suivi des marchés" });
 
@@ -12,16 +12,16 @@ function aller(url: string) {
 </script>
 
 <template>
-  <main class="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-16">
-    <h1 class="text-2xl font-semibold">Suivi des marchés</h1>
-    <p class="text-muted-foreground">
+  <main class="connexion">
+    <h1 class="titre-page">Suivi des marchés</h1>
+    <p class="discret">
       Les échéances, les avances et les révisions de prix des marchés de la Communauté
       de communes, rassemblées au même endroit.
     </p>
     <Bouton @click="aller('/auth/keycloak')">Se connecter</Bouton>
-    <div v-if="estDev" class="flex flex-col gap-2 border-t pt-4 text-sm text-muted-foreground">
+    <div v-if="estDev" class="dev">
       <span>Connexion rapide de développement (hors production) :</span>
-      <div class="flex gap-2">
+      <div class="dev__actions">
         <Bouton variante="contour" taille="petit" @click="aller('/auth/dev?comme=test')">
           Entrer comme test (membre)
         </Bouton>
@@ -32,3 +32,29 @@ function aller(url: string) {
     </div>
   </main>
 </template>
+
+<style scoped>
+.connexion {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.5rem;
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 4rem 1rem;
+}
+
+.dev {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  color: var(--muted-foreground);
+}
+
+.dev__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+</style>

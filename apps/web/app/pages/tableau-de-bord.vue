@@ -45,40 +45,40 @@ async function synchroniserCiril() {
 </script>
 
 <template>
-  <main class="mx-auto flex max-w-5xl flex-col gap-10 px-4 py-10">
-    <section class="flex flex-col gap-2">
-      <h1 class="text-2xl font-semibold">Bonjour {{ nomAffiche }}.</h1>
-      <p class="text-muted-foreground">
+  <div class="page">
+    <section class="accueil">
+      <h1 class="titre-page">Bonjour {{ nomAffiche }}.</h1>
+      <p class="discret">
         Aucune donnée n'est encore remontée de CIRIL. Les écrans de suivi arrivent avec
         la synchronisation.
       </p>
     </section>
 
-    <section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      <article class="rounded-md border p-4">
-        <h2 class="font-semibold">Échéances</h2>
-        <p class="text-sm text-muted-foreground">
+    <section class="cartes">
+      <article class="carte">
+        <h2 class="titre-carte">Échéances</h2>
+        <p class="discret">
           Reconductions, garanties, réceptions, points à six mois, bons de commande. Visible dès
           la première synchronisation CIRIL.
         </p>
       </article>
-      <article class="rounded-md border p-4">
-        <h2 class="font-semibold">Avances</h2>
-        <p class="text-sm text-muted-foreground">
+      <article class="carte">
+        <h2 class="titre-carte">Avances</h2>
+        <p class="discret">
           Suivi des avances versées et des remboursements à amorcer. À venir.
         </p>
       </article>
-      <article class="rounded-md border p-4">
-        <h2 class="font-semibold">Révisions de prix</h2>
-        <p class="text-sm text-muted-foreground">
+      <article class="carte">
+        <h2 class="titre-carte">Révisions de prix</h2>
+        <p class="discret">
           Indices INSEE appliqués aux marchés révisables. À venir.
         </p>
       </article>
     </section>
 
-    <section v-if="estDev" class="flex flex-col gap-3 border-t pt-6">
-      <h2 class="font-semibold">Synchronisation CIRIL (dev)</h2>
-      <p class="text-sm text-muted-foreground">
+    <section v-if="estDev" class="bloc">
+      <h2 class="titre-carte">Synchronisation CIRIL (dev)</h2>
+      <p class="discret">
         Récupère les contrats de la sandbox et les insère dans la table marchés.
       </p>
       <div>
@@ -86,32 +86,84 @@ async function synchroniserCiril() {
           {{ synchroEnCours ? "Synchronisation en cours..." : "Lancer la synchronisation" }}
         </Bouton>
       </div>
-      <p v-if="synchroErreur" role="alert" class="text-sm text-destructive">
+      <p v-if="synchroErreur" role="alert" class="erreur">
         {{ synchroErreur }}
       </p>
-      <dl v-if="synchro" class="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
+      <dl v-if="synchro" class="resultats">
         <div>
-          <dt class="text-muted-foreground">Reçus</dt>
-          <dd class="font-semibold">{{ synchro.recus }}</dd>
+          <dt class="discret">Reçus</dt>
+          <dd class="valeur">{{ synchro.recus }}</dd>
         </div>
         <div>
-          <dt class="text-muted-foreground">Insérés</dt>
-          <dd class="font-semibold">{{ synchro.inseres }}</dd>
+          <dt class="discret">Insérés</dt>
+          <dd class="valeur">{{ synchro.inseres }}</dd>
         </div>
         <div>
-          <dt class="text-muted-foreground">Mis à jour</dt>
-          <dd class="font-semibold">{{ synchro.misAJour }}</dd>
+          <dt class="discret">Mis à jour</dt>
+          <dd class="valeur">{{ synchro.misAJour }}</dd>
         </div>
         <div>
-          <dt class="text-muted-foreground">Inchangés</dt>
-          <dd class="font-semibold">{{ synchro.inchanges }}</dd>
+          <dt class="discret">Inchangés</dt>
+          <dd class="valeur">{{ synchro.inchanges }}</dd>
         </div>
       </dl>
     </section>
 
-    <section class="flex flex-col gap-3 border-t pt-6">
-      <h2 class="font-semibold">Mon compte</h2>
+    <section class="bloc">
+      <h2 class="titre-carte">Mon compte</h2>
       <FormulaireNom :nom-initial="compte?.nom ?? ''" @enregistre="refresh" />
     </section>
-  </main>
+  </div>
 </template>
+
+<style scoped>
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.accueil {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cartes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 1rem;
+}
+
+.carte {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-carte);
+  background: var(--surface);
+}
+
+.bloc {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.erreur {
+  color: var(--retard-foreground);
+}
+
+.resultats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+  gap: 0.5rem;
+}
+
+.valeur {
+  font-weight: 600;
+}
+</style>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-definePageMeta({ middleware: "anonyme" });
+definePageMeta({ layout: false, middleware: "anonyme" });
 
 useHead({ title: "Connexion - Suivi des marchés" });
 
@@ -13,7 +13,7 @@ function aller(url: string) {
 
 <template>
   <main class="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-16">
-    <h1 class="text-2xl font-semibold">Suivi des marchés</h1>
+    <h1 class="text-titre-page">Suivi des marchés</h1>
     <p class="text-muted-foreground">
       Les échéances, les avances et les révisions de prix des marchés de la Communauté
       de communes, rassemblées au même endroit.

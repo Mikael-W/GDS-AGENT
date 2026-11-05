@@ -40,6 +40,7 @@ make help         # tout le reste
 |---|---|
 | Monorepo | pnpm + Turborepo (`pnpm-workspace.yaml`, `turbo.json`), Biome (`biome.json`), versions des outils dans `mise.toml` |
 | Web (Nuxt 4, Vue 3, Nitro) | `apps/web` : pages `app/pages/`, composants `app/components/`, routes serveur `server/api/`, utilitaires serveur `server/utils/`, réglages validés `server/utils/env.ts` (ADR 0004) |
+| Design | `docs/systeme-de-design.md` : direction retenue par le client (ADR 0005), jetons dans `apps/web/app/assets/css/main.css`, police Figtree importée dans ce fichier ; aucune couleur en dur dans un composant |
 | Connexion | `apps/web/server/api/auth/keycloak.get.ts` (nuxt-auth-utils, flux OIDC côté serveur), déconnexion `server/api/auth/deconnexion.post.ts` ; le navigateur ne voit que `user` via `useUserSession`, jamais les jetons |
 | Santé | `/api/health`, `/api/health/ready` (`server/utils/sante.ts` : base et planificateur), `/api/version` ; Caddy les sert aussi en `/health`, `/health/ready`, `/version` |
 | Base | PostgreSQL 17, Drizzle dans `packages/db` (partagé par le web et le worker) : schéma `src/schema.ts`, `creerBase(url, max)`, migrations `drizzle/` jouées au déploiement (service `migrations`) ; le web s'y connecte par `apps/web/server/utils/base.ts` |

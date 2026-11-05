@@ -7,19 +7,16 @@ import {
   formaterPeriode,
   type MarcheListe,
   montantNotifie,
-  paginer,
-  pluriel,
   services,
   synthese,
 } from "#shared/domaine/marches";
+import { aujourdhuiParis, paginer, pluriel } from "#shared/domaine/affichage";
 
 definePageMeta({ middleware: "connecte" });
 
 useHead({ title: "Marchés - Suivi des marchés" });
 
-const aujourdhui = useState("aujourdhui", () =>
-  new Date().toLocaleDateString("fr-CA", { timeZone: "Europe/Paris" }),
-);
+const aujourdhui = useState("aujourdhui", () => aujourdhuiParis());
 
 const { data: marches, error } = await useFetch<MarcheListe[]>("/api/marches", {
   default: () => [],

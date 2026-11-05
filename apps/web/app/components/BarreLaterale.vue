@@ -10,6 +10,7 @@
 
     <nav aria-label="Navigation principale" class="navigation">
       <ElementNavigation libelle="Tableau de bord" route="/tableau-de-bord" />
+      <ElementNavigation libelle="Alertes" route="/alertes" />
       <ElementNavigation libelle="Marchés" route="/marches" />
     </nav>
 

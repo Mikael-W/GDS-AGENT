@@ -1,5 +1,4 @@
 import { describe, expect, test } from "vitest";
-
 import {
   estEnCours,
   filtrer,
@@ -8,11 +7,8 @@ import {
   formaterPeriode,
   type MarcheListe,
   montantNotifie,
-  paginer,
-  pluriel,
   services,
   synthese,
-  TAILLE_PAGE,
 } from "@/shared/domaine/marches";
 
 const aujourdhui = "2026-11-05";
@@ -117,28 +113,6 @@ describe("marché en cours", () => {
         const enCours = estEnCours(m, aujourdhui);
 
         expect(enCours).toBe(false);
-      });
-    });
-  });
-});
-
-describe("accord au pluriel", () => {
-  describe("Given un seul marché", () => {
-    describe("When on formule le nombre", () => {
-      test("Then le mot reste au singulier", () => {
-        const libelle = pluriel(1, "marché");
-
-        expect(libelle).toBe("1 marché");
-      });
-    });
-  });
-
-  describe("Given trois marchés", () => {
-    describe("When on formule le nombre", () => {
-      test("Then le mot prend un s", () => {
-        const libelle = pluriel(3, "marché");
-
-        expect(libelle).toBe("3 marchés");
       });
     });
   });
@@ -286,47 +260,6 @@ describe("services du portefeuille", () => {
         const liste = services(portefeuille);
 
         expect(liste).toEqual(["Espaces verts", "Travaux"]);
-      });
-    });
-  });
-});
-
-describe("pagination de la liste", () => {
-  const nombreDeMarches = TAILLE_PAGE * 2 + 3;
-  const portefeuille = Array.from({ length: nombreDeMarches }, (_, i) =>
-    marche({ reference: `AO ${i}` }),
-  );
-
-  describe("Given vingt-trois marchés", () => {
-    describe("When on demande la dernière page", () => {
-      test("Then elle porte les trois derniers marchés", () => {
-        const resultat = paginer(portefeuille, 3);
-
-        expect(resultat.lignes).toHaveLength(3);
-      });
-
-      test("Then le total reste celui de la liste entière", () => {
-        const resultat = paginer(portefeuille, 3);
-
-        expect(resultat.total).toBe(nombreDeMarches);
-      });
-    });
-
-    describe("When on demande une page au-delà de la dernière", () => {
-      test("Then on retombe sur la dernière page", () => {
-        const resultat = paginer(portefeuille, 9);
-
-        expect(resultat.page).toBe(3);
-      });
-    });
-  });
-
-  describe("Given une liste vide", () => {
-    describe("When on demande la première page", () => {
-      test("Then il reste une page, sans ligne", () => {
-        const resultat = paginer([], 1);
-
-        expect(resultat).toEqual({ lignes: [], total: 0, page: 1, pages: 1 });
       });
     });
   });

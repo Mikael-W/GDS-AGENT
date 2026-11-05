@@ -35,3 +35,6 @@ __pycache__/
 .idea/
 .vscode/
 *.log
+
+# Guide auto-écrit par Turborepo pour les agents IA, non pertinent en Git.
+AGENTS.md

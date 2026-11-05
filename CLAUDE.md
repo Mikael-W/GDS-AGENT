@@ -22,6 +22,14 @@ Le code reflète à tout instant exactement l'état voulu, sans strate morte, qu
 - Valider aux frontières (formulaires, réponses des API tierces, réglages) avec Zod, faire confiance au code interne.
 - Appels réseau sortants et SDK LLM cantonnés à leur module : Biome refuse `fetch` hors d'un client dédié déclaré dans ses overrides (les tests de contrat en sont un), et le SDK LLM (`ai`, `@ai-sdk/amazon-bedrock`, `@ai-sdk/openai-compatible`) hors de `apps/web/server/utils/llm.ts`.
 
+## Tests
+
+Les tests sont la spécification vivante du produit, lisible par un agent comme par un humain :
+- Style BDD : `describe('Given ...')` > `describe('When ...')` > `test('Then ...')`, et Arrange / Act / Assert séparés par une ligne vide dans chaque `Then`.
+- Phrases en langage métier et valeurs réalistes du cadrage client ; un `Then` s'énonce comme une règle que le client reconnaîtrait. Lire les noms d'un fichier de test doit suffire à comprendre la règle protégée.
+- Domaine pur testé sans Vue ni base ; requêtes et routes serveur testées sur la base de test jetable (`make test`).
+- Tout ticket livre ses tests : règle métier ou branche d'erreur sans test, c'est un ticket inachevé.
+
 ## Commandes
 
 ```bash

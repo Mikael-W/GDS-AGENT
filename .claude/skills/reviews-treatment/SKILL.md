@@ -31,7 +31,7 @@ Décisions possibles : `accepté`, `accepté en variante` (autre correction, jus
 ## Garde-fous
 
 - Ne jamais marquer un constat accepté sans l'avoir appliqué et vérifié.
-- Ne jamais supprimer un test pour faire passer la revue ; un test se corrige ou se remplace par un meilleur.
+- Ne jamais supprimer un test pour faire passer la revue ; un test se corrige ou se remplace par un meilleur. Un test corrigé reste une spécification lisible : Given / When / Then en langage métier, Arrange / Act / Assert dans chaque Then.
 - Ne pas introduire de legacy en corrigeant : on migre franchement, on supprime l'ancien.
 - Ne pas toucher aux fichiers hors du ticket ; un défaut croisé en chemin se corrige seulement s'il est dans les fichiers déjà modifiés.
 - Pas de push ni de déploiement dans ce skill. Le résultat est un compte rendu : constats reçus, décisions, commits, points restés en désaccord. Il alimente la description de la MR.

@@ -10,6 +10,7 @@ import {
   serial,
   text,
   timestamp,
+  unique,
   varchar,
 } from "drizzle-orm/pg-core";
 
@@ -197,3 +198,27 @@ export const synchronisations = pgTable("synchronisations", {
 });
 
 export type Synchronisation = typeof synchronisations.$inferSelect;
+
+/**
+ * Décision d'une personne de l'équipe sur une alerte d'échéance. Les alertes
+ * elles-mêmes se calculent à la volée depuis le référentiel ; cette table ne
+ * garde que ce que l'équipe en a fait. Une alerte traitée ne revient pas tant
+ * que son échéance ne change pas.
+ */
+export const traitementsAlertes = pgTable(
+  "traitements_alertes",
+  {
+    id: serial("id").primaryKey(),
+    marcheId: integer("marche_id")
+      .notNull()
+      .references(() => marches.id, { onDelete: "cascade" }),
+    famille: varchar("famille", { length: 32 }).notNull(),
+    echeanceLe: date("echeance_le").notNull(),
+    commentaire: text("commentaire").notNull(),
+    traitePar: varchar("traite_par", { length: 64 }).notNull(),
+    traiteLe: timestamp("traite_le", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [unique("traitements_alertes_alerte").on(t.marcheId, t.famille, t.echeanceLe)],
+);
+
+export type TraitementAlerte = typeof traitementsAlertes.$inferSelect;

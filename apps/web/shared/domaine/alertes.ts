@@ -6,6 +6,16 @@ export type AlerteListe = Alerte & {
   service: string | null;
 };
 
+export type DetailAlerte = AlerteListe & {
+  titulaire: string | null;
+  notifieLe: string | null;
+  debuteLe: string | null;
+  finitLe: string | null;
+  montantInitial: string | null;
+  solde: boolean;
+  traitement: { commentaire: string; traiteLe: string } | null;
+};
+
 export type VueAlertes = "a_traiter" | "depassees";
 
 export type PeriodeAlertes = "toutes" | "30" | "90";
@@ -74,6 +84,11 @@ export function libelleEcheance(joursRestants: number): string {
   return joursRestants < 0 ? `Dépassée de ${jours} ${unite}` : `Dans ${jours} ${unite}`;
 }
 
-export function formaterDate(iso: string): string {
+export function formaterDate(iso: string | null): string {
+  if (iso === null) return "Non renseignée";
   return `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}`;
+}
+
+export function lienAlerte(alerte: Pick<AlerteListe, "reference" | "famille">): string {
+  return `/alertes/${encodeURIComponent(alerte.reference)}/${alerte.famille}`;
 }

@@ -26,7 +26,7 @@ export type SyntheseMarches = {
   montantNotifie: number;
 };
 
-const eurosEnCentimes = (montant: string | null): number =>
+export const eurosEnCentimes = (montant: string | null): number =>
   montant === null ? 0 : Math.round(Number(montant) * 100);
 
 const sansAccent = (texte: string): string =>

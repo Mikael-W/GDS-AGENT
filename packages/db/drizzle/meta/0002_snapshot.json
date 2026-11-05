@@ -1,0 +1,935 @@
+{
+  "id": "8cc673ab-668a-4caa-ae62-9db0cef1ab4f",
+  "prevId": "9ffbc236-a246-4c74-afa7-7255b29022c5",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.avenants": {
+      "name": "avenants",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "marche_id": {
+          "name": "marche_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reference": {
+          "name": "reference",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "numero": {
+          "name": "numero",
+          "type": "varchar(16)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "objet": {
+          "name": "objet",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "montant": {
+          "name": "montant",
+          "type": "numeric(14, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "notifie_le": {
+          "name": "notifie_le",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "nouvelle_fin": {
+          "name": "nouvelle_fin",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "empreinte": {
+          "name": "empreinte",
+          "type": "char(64)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "avenants_marche": {
+          "name": "avenants_marche",
+          "columns": [
+            {
+              "expression": "marche_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "avenants_marche_id_marches_id_fk": {
+          "name": "avenants_marche_id_marches_id_fk",
+          "tableFrom": "avenants",
+          "tableTo": "marches",
+          "columnsFrom": [
+            "marche_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "avenants_reference_unique": {
+          "name": "avenants_reference_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "reference"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.battements": {
+      "name": "battements",
+      "schema": "",
+      "columns": {
+        "service": {
+          "name": "service",
+          "type": "varchar(64)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "vu_le": {
+          "name": "vu_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.engagements": {
+      "name": "engagements",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "marche_id": {
+          "name": "marche_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reference": {
+          "name": "reference",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "objet": {
+          "name": "objet",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "montant": {
+          "name": "montant",
+          "type": "numeric(14, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "emis_le": {
+          "name": "emis_le",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "solde": {
+          "name": "solde",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "empreinte": {
+          "name": "empreinte",
+          "type": "char(64)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "engagements_marche": {
+          "name": "engagements_marche",
+          "columns": [
+            {
+              "expression": "marche_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "engagements_emis_le": {
+          "name": "engagements_emis_le",
+          "columns": [
+            {
+              "expression": "emis_le",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "engagements_marche_id_marches_id_fk": {
+          "name": "engagements_marche_id_marches_id_fk",
+          "tableFrom": "engagements",
+          "tableTo": "marches",
+          "columnsFrom": [
+            "marche_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "engagements_reference_unique": {
+          "name": "engagements_reference_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "reference"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.factures": {
+      "name": "factures",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "marche_id": {
+          "name": "marche_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "engagement_id": {
+          "name": "engagement_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reference": {
+          "name": "reference",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "montant_ht": {
+          "name": "montant_ht",
+          "type": "numeric(14, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "montant_ttc": {
+          "name": "montant_ttc",
+          "type": "numeric(14, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "recue_le": {
+          "name": "recue_le",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "service_fait_le": {
+          "name": "service_fait_le",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mandatee_le": {
+          "name": "mandatee_le",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "etat": {
+          "name": "etat",
+          "type": "varchar(40)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "etat_liquidation": {
+          "name": "etat_liquidation",
+          "type": "varchar(40)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "revision": {
+          "name": "revision",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "empreinte": {
+          "name": "empreinte",
+          "type": "char(64)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "factures_marche": {
+          "name": "factures_marche",
+          "columns": [
+            {
+              "expression": "marche_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "factures_mandatee_le": {
+          "name": "factures_mandatee_le",
+          "columns": [
+            {
+              "expression": "mandatee_le",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "factures_marche_id_marches_id_fk": {
+          "name": "factures_marche_id_marches_id_fk",
+          "tableFrom": "factures",
+          "tableTo": "marches",
+          "columnsFrom": [
+            "marche_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "factures_engagement_id_engagements_id_fk": {
+          "name": "factures_engagement_id_engagements_id_fk",
+          "tableFrom": "factures",
+          "tableTo": "engagements",
+          "columnsFrom": [
+            "engagement_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "factures_reference_unique": {
+          "name": "factures_reference_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "reference"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.lots": {
+      "name": "lots",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "marche_id": {
+          "name": "marche_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reference": {
+          "name": "reference",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "numero": {
+          "name": "numero",
+          "type": "varchar(16)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "objet": {
+          "name": "objet",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "titulaire": {
+          "name": "titulaire",
+          "type": "varchar(300)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "montant": {
+          "name": "montant",
+          "type": "numeric(14, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "empreinte": {
+          "name": "empreinte",
+          "type": "char(64)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "lots_marche": {
+          "name": "lots_marche",
+          "columns": [
+            {
+              "expression": "marche_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "lots_marche_id_marches_id_fk": {
+          "name": "lots_marche_id_marches_id_fk",
+          "tableFrom": "lots",
+          "tableTo": "marches",
+          "columnsFrom": [
+            "marche_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "lots_reference_unique": {
+          "name": "lots_reference_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "reference"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.marches": {
+      "name": "marches",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "reference": {
+          "name": "reference",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "objet": {
+          "name": "objet",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "titulaire": {
+          "name": "titulaire",
+          "type": "varchar(300)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "service": {
+          "name": "service",
+          "type": "varchar(120)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "notifie_le": {
+          "name": "notifie_le",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "debute_le": {
+          "name": "debute_le",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "finit_le": {
+          "name": "finit_le",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "montant_initial": {
+          "name": "montant_initial",
+          "type": "numeric(14, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "montant_avenants": {
+          "name": "montant_avenants",
+          "type": "numeric(14, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "montant_revisions": {
+          "name": "montant_revisions",
+          "type": "numeric(14, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "montant_retenues": {
+          "name": "montant_retenues",
+          "type": "numeric(14, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "montant_disponible": {
+          "name": "montant_disponible",
+          "type": "numeric(14, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reconduction_tacite": {
+          "name": "reconduction_tacite",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reconductions_max": {
+          "name": "reconductions_max",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "a_bons_de_commande": {
+          "name": "a_bons_de_commande",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "garantie_finit_le": {
+          "name": "garantie_finit_le",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "receptionne_le": {
+          "name": "receptionne_le",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "solde": {
+          "name": "solde",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "actif": {
+          "name": "actif",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "empreinte": {
+          "name": "empreinte",
+          "type": "char(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "lu_le": {
+          "name": "lu_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "marches_finit_le": {
+          "name": "marches_finit_le",
+          "columns": [
+            {
+              "expression": "finit_le",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "marches_actif": {
+          "name": "marches_actif",
+          "columns": [
+            {
+              "expression": "actif",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "marches_reference_unique": {
+          "name": "marches_reference_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "reference"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.synchronisations": {
+      "name": "synchronisations",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "demarree_le": {
+          "name": "demarree_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "terminee_le": {
+          "name": "terminee_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "resultat": {
+          "name": "resultat",
+          "type": "resultat_synchronisation",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'en_cours'"
+        },
+        "marches_lus": {
+          "name": "marches_lus",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "marches_modifies": {
+          "name": "marches_modifies",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "erreur": {
+          "name": "erreur",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.traitements_alertes": {
+      "name": "traitements_alertes",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "marche_id": {
+          "name": "marche_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "famille": {
+          "name": "famille",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "echeance_le": {
+          "name": "echeance_le",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "commentaire": {
+          "name": "commentaire",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "traite_par": {
+          "name": "traite_par",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "traite_le": {
+          "name": "traite_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "traitements_alertes_marche_id_marches_id_fk": {
+          "name": "traitements_alertes_marche_id_marches_id_fk",
+          "tableFrom": "traitements_alertes",
+          "tableTo": "marches",
+          "columnsFrom": [
+            "marche_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "traitements_alertes_alerte": {
+          "name": "traitements_alertes_alerte",
+          "nullsNotDistinct": false,
+          "columns": [
+            "marche_id",
+            "famille",
+            "echeance_le"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.utilisateurs": {
+      "name": "utilisateurs",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "sub": {
+          "name": "sub",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar(320)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "nom": {
+          "name": "nom",
+          "type": "varchar(200)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "role": {
+          "name": "role",
+          "type": "role",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'membre'"
+        },
+        "cree_le": {
+          "name": "cree_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "vu_le": {
+          "name": "vu_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "utilisateurs_sub_unique": {
+          "name": "utilisateurs_sub_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "sub"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.resultat_synchronisation": {
+      "name": "resultat_synchronisation",
+      "schema": "public",
+      "values": [
+        "en_cours",
+        "succes",
+        "echec"
+      ]
+    },
+    "public.role": {
+      "name": "role",
+      "schema": "public",
+      "values": [
+        "membre",
+        "owner"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

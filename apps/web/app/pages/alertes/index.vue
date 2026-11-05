@@ -6,6 +6,7 @@ import {
   formaterDate,
   LIBELLES_FAMILLE,
   libelleEcheance,
+  lienAlerte,
   type PeriodeAlertes,
   services,
   synthese,
@@ -116,6 +117,7 @@ const suivante = () => {
                 <th scope="col">Famille</th>
                 <th scope="col">Marché</th>
                 <th scope="col">Ce que l'agent a constaté</th>
+                <th scope="col">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -132,6 +134,11 @@ const suivante = () => {
                   <p class="reference">{{ a.reference }}</p>
                 </td>
                 <td>{{ a.explication }}</td>
+                <td>
+                  <NuxtLink :to="lienAlerte(a)" class="examiner">
+                    Examiner<span class="visuellement-cache"> l'alerte du marché {{ a.reference }}</span>
+                  </NuxtLink>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -277,6 +284,28 @@ const suivante = () => {
 
 .delai--retard {
   color: var(--retard-foreground);
+}
+
+.examiner {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.125rem;
+  padding: 0 0.875rem;
+  border: 1px solid var(--input);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--foreground);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.examiner:hover {
+  background: var(--muted);
+}
+
+.examiner:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
 }
 
 .reference {

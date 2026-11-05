@@ -1,8 +1,9 @@
 import { creerBase, schema } from "@projet/db";
+import { eq } from "drizzle-orm";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
 
-import { listerAlertes } from "@/server/utils/alertes";
+import { detailAlerte, listerAlertes, traiterAlerte } from "@/server/utils/alertes";
 
 const url = process.env.TEST_DATABASE_URL;
 
@@ -112,6 +113,104 @@ describe.skipIf(!url)("alertes d'échéance lues dans la base de l'agent", () =>
         const alertes = await listerAlertes("2026-11-04", db);
 
         expect(alertes).toEqual([]);
+      });
+    });
+  });
+
+  describe("Given l'alerte de reconduction tacite du marché AO 25075, traitée par un agent", () => {
+    const saisie = {
+      reference: "AO 25075",
+      famille: "reconduction",
+      commentaire: "Reconduction acceptée avec le titulaire, décision de la direction.",
+      traitePar: "a1b2c3",
+    } as const;
+
+    beforeAll(async () => {
+      await db.delete(schema.engagements);
+      await db.delete(schema.marches);
+      await db.insert(schema.marches).values({
+        reference: "AO 25075",
+        objet: "Entretien des espaces verts et des abords",
+        service: "Espaces verts",
+        titulaire: "Titulaire C",
+        reconductionTacite: true,
+        finitLe: "2027-03-04",
+        empreinte: EMPREINTE,
+      });
+    });
+
+    describe("When on liste les alertes avant le traitement", () => {
+      test("Then l'alerte est à traiter", async () => {
+        const alertes = await listerAlertes("2026-11-04", db);
+
+        expect(alertes.map((a) => [a.reference, a.famille])).toEqual([
+          ["AO 25075", "reconduction"],
+        ]);
+      });
+
+      test("Then son détail ne porte pas encore de traitement", async () => {
+        const detail = await detailAlerte("AO 25075", "reconduction", "2026-11-04", db);
+
+        expect(detail?.traitement).toBeNull();
+      });
+    });
+
+    describe("When l'agent la marque comme traitée", () => {
+      test("Then le traitement est enregistré", async () => {
+        const issue = await traiterAlerte(saisie, "2026-11-04", db);
+
+        expect(issue).toBe("traitee");
+      });
+
+      test("Then elle n'est plus dans la liste le lendemain", async () => {
+        const alertes = await listerAlertes("2026-11-05", db);
+
+        expect(alertes).toEqual([]);
+      });
+
+      test("Then son détail garde le commentaire de la décision", async () => {
+        const detail = await detailAlerte("AO 25075", "reconduction", "2026-11-05", db);
+
+        expect(detail?.traitement?.commentaire).toBe(saisie.commentaire);
+      });
+
+      test("Then la traiter une seconde fois ne crée pas de doublon", async () => {
+        await traiterAlerte(saisie, "2026-11-05", db);
+
+        const lignes = await db.select().from(schema.traitementsAlertes);
+
+        expect(lignes).toHaveLength(1);
+      });
+    });
+
+    describe("When la date de fin du marché change après le traitement", () => {
+      test("Then une nouvelle alerte apparaît pour la nouvelle échéance", async () => {
+        await db
+          .update(schema.marches)
+          .set({ finitLe: "2027-06-04" })
+          .where(eq(schema.marches.reference, "AO 25075"));
+
+        const alertes = await listerAlertes("2027-02-10", db);
+
+        expect(alertes.map((a) => [a.famille, a.echeanceLe])).toEqual([
+          ["reconduction", "2027-02-04"],
+        ]);
+      });
+    });
+  });
+
+  describe("Given un marché sans alerte en cours", () => {
+    describe("When on demande le détail d'une alerte de garantie qui n'existe pas", () => {
+      test("Then aucune alerte n'est trouvée et rien ne peut être traité", async () => {
+        const detail = await detailAlerte("AO 25075", "garantie", "2026-11-04", db);
+        const issue = await traiterAlerte(
+          { reference: "AO 25075", famille: "garantie", commentaire: "Vu", traitePar: "a1b2c3" },
+          "2026-11-04",
+          db,
+        );
+
+        expect(detail).toBeUndefined();
+        expect(issue).toBe("inconnue");
       });
     });
   });

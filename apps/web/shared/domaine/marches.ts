@@ -1,5 +1,3 @@
-export const TAILLE_PAGE = 10;
-
 export type MarcheListe = {
   reference: string;
   objet: string | null;
@@ -28,13 +26,6 @@ export type SyntheseMarches = {
   montantNotifie: number;
 };
 
-export type PageMarches = {
-  lignes: MarcheListe[];
-  total: number;
-  page: number;
-  pages: number;
-};
-
 const eurosEnCentimes = (montant: string | null): number =>
   montant === null ? 0 : Math.round(Number(montant) * 100);
 
@@ -51,10 +42,6 @@ export function montantNotifie(marche: MarcheListe): number {
 export function estEnCours(marche: MarcheListe, aujourdhui: string): boolean {
   if (!marche.actif || marche.solde) return false;
   return marche.finitLe === null || marche.finitLe >= aujourdhui;
-}
-
-export function pluriel(nombre: number, mot: string): string {
-  return `${nombre} ${mot}${nombre > 1 ? "s" : ""}`;
 }
 
 export function synthese(marches: MarcheListe[], aujourdhui: string): SyntheseMarches {
@@ -86,18 +73,6 @@ export function filtrer(
       sansAccent(champ ?? "").includes(recherche),
     );
   });
-}
-
-export function paginer(marches: MarcheListe[], page: number): PageMarches {
-  const pages = Math.max(1, Math.ceil(marches.length / TAILLE_PAGE));
-  const courante = Math.min(Math.max(1, page), pages);
-  const debut = (courante - 1) * TAILLE_PAGE;
-  return {
-    lignes: marches.slice(debut, debut + TAILLE_PAGE),
-    total: marches.length,
-    page: courante,
-    pages,
-  };
 }
 
 const euro = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });

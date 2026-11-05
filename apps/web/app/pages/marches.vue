@@ -7,11 +7,10 @@ import {
   formaterPeriode,
   type MarcheListe,
   montantNotifie,
-  paginer,
-  pluriel,
   services,
   synthese,
 } from "#shared/domaine/marches";
+import { paginer, pluriel } from "#shared/domaine/affichage";
 
 definePageMeta({ middleware: "connecte" });
 

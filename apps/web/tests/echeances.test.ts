@@ -5,7 +5,7 @@ import {
   evaluer,
   evaluerPortefeuille,
   type MarcheSuivi,
-} from "@/server/utils/echeances";
+} from "@/shared/domaine/echeances";
 
 const BASE: MarcheSuivi = {
   reference: "M-2026-001",

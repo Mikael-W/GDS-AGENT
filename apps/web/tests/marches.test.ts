@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-
+import { paginer, pluriel, TAILLE_PAGE } from "@/shared/domaine/affichage";
 import {
   estEnCours,
   filtrer,
@@ -8,11 +8,8 @@ import {
   formaterPeriode,
   type MarcheListe,
   montantNotifie,
-  paginer,
-  pluriel,
   services,
   synthese,
-  TAILLE_PAGE,
 } from "@/shared/domaine/marches";
 
 const aujourdhui = "2026-11-05";

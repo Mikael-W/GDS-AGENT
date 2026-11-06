@@ -113,6 +113,59 @@ describe("explanation phrases", () => {
       });
     });
   });
+  describe("Given an express renewal contract ending on 4 March 2027", () => {
+    describe("When the reconduction alert is evaluated", () => {
+      test("Then the phrase says the renewal is never automatic", () => {
+        const m = contract({ endsOn: "2027-03-04", tacitRenewal: false });
+
+        const alert = only(evaluate(m, "2026-11-04"), "reconduction");
+
+        expect(alert.explanation).toBe(
+          "Le marché prend fin le 04/03/2027 : sa reconduction est expresse, elle n'est jamais automatique.",
+        );
+      });
+    });
+  });
+
+  describe("Given a contract ending on 20 November 2026 with no reception recorded", () => {
+    describe("When the reception alert is evaluated", () => {
+      test("Then the phrase gives the end date and the missing reception", () => {
+        const m = contract({ endsOn: "2026-11-20" });
+
+        const alert = only(evaluate(m, "2026-11-04"), "reception");
+
+        expect(alert.explanation).toBe(
+          "Le marché prend fin le 20/11/2026 et aucune réception n'est enregistrée.",
+        );
+      });
+    });
+  });
+
+  describe("Given a contract started on 20 May 2026", () => {
+    describe("When the point_six_mois alert is evaluated", () => {
+      test("Then the phrase gives the date the six months are reached", () => {
+        const m = contract({ startsOn: "2026-05-20" });
+
+        const alert = only(evaluate(m, "2026-11-04"), "point_six_mois");
+
+        expect(alert.explanation).toBe("Le marché atteint six mois d'exécution le 18/11/2026.");
+      });
+    });
+  });
+
+  describe("Given a purchase-order contract started on 1 July 2026 with no order", () => {
+    describe("When the sans_bon_de_commande alert is evaluated", () => {
+      test("Then the phrase counts from the contract start", () => {
+        const m = contract({ hasPurchaseOrders: true, startsOn: "2026-07-01" });
+
+        const alert = only(evaluate(m, "2026-11-04"), "sans_bon_de_commande");
+
+        expect(alert.explanation).toBe(
+          "Aucun bon de commande émis depuis le début du marché, le 01/07/2026.",
+        );
+      });
+    });
+  });
 });
 
 describe("guarantee", () => {
@@ -142,7 +195,7 @@ describe("absence of purchase order", () => {
     // une échéance ratée reste visible tant qu'elle n'est pas traitée.
     const a = only(evaluate(m, "2026-11-04"), "sans_bon_de_commande");
     expect(a.deadlineOn).toBe("2026-10-30");
-    expect(a.explanation).toContain("01/08/2026");
+    expect(a.explanation).toBe("Aucun bon de commande émis depuis le 01/08/2026.");
   });
 
   it("counts from the contract start when no commitment exists", () => {

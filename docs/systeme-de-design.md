@@ -108,7 +108,7 @@ Français courant, sans vocabulaire technique. Une erreur parle du produit, pas 
 
 Les dates s'écrivent en toutes lettres de chiffres, `JJ/MM/AAAA`, et l'échéance est doublée d'un délai relatif : « 01/11/2026 », puis « Dépassée de 4 jours ». Les montants portent l'euro et un espace insécable avant le symbole.
 
-Une alerte dit ce qui a été constaté, pas ce qu'il faut faire : « Reconduction tacite au 09/01/2027 : sans décision contraire, le marché repart. »
+Une alerte dit ce qui a été constaté, pas ce qu'il faut faire : « Le marché prend fin le 09/01/2027 et sera reconduit tacitement sans décision contraire. »
 
 ## Accessibilité
 

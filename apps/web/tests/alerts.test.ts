@@ -18,7 +18,8 @@ function alert(fields: Partial<AlertListItem> = {}): AlertListItem {
     reference: "AO 25075",
     deadlineOn: "2026-11-09",
     daysRemaining: 4,
-    explanation: "Reconduction tacite au 09/12/2026, préavis de non-reconduction de 1 mois.",
+    explanation:
+      "Le marché prend fin le 09/12/2026 et sera reconduit tacitement sans décision contraire.",
     subject: "Entretien des espaces verts et des abords",
     service: "Espaces verts",
     ...fields,

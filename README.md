@@ -8,7 +8,6 @@ Prérequis : Docker (base PostgreSQL) et `mise`.
 
 ```bash
 mise install
-pnpm install
 cp apps/web/.env.example apps/web/.env
 make dev
 ```
@@ -27,10 +26,10 @@ Les écrans de suivi se remplissent depuis CIRIL. Les accès de la sandbox se de
 
 ### Flux Git
 
-`develop` reçoit les fusions locales des branches de ticket ; `prod` reflète ce qui est déployé (ADR 0002).
+`develop` reçoit les branches de ticket après relecture ; `main` ne reçoit que des fusions (ADR 0002).
 
 ## Livrer
 
-Pousser sur `prod` : la CI vérifie, puis publie les images. `make deploy` met la dernière version verte en production ; `make deploy TAG=sha-xxxxxxx` une version précise. Détails : `RUNBOOK.md`.
+Pousser sur `main` : la CI vérifie, puis publie les images. `make deploy` met la dernière version verte en production ; `make deploy TAG=sha-xxxxxxx` une version précise. Détails : `RUNBOOK.md`.
 
 Projet généré par le template `AI-Sisters/template-mission` (`uvx copier update --trust` pour suivre ses évolutions).

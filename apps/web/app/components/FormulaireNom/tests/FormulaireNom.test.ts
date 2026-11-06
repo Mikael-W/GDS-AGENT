@@ -44,7 +44,7 @@ describe("formulaire du nom affiché", () => {
         registerEndpoint("/api/compte/renommer", {
           method: "POST",
           handler: () => {
-            throw createError({ statusCode: 400, statusMessage: "Le nom est vide" });
+            throw createError({ statusCode: 400, data: { message: "Le nom est vide" } });
           },
         });
         const formulaire = await mountSuspended(FormulaireNom, { props: { nomInitial: "Mika" } });

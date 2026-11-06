@@ -1,20 +1,26 @@
 import { mountSuspended, registerEndpoint } from "@nuxt/test-utils/runtime";
 import { createError } from "h3";
-import { beforeEach, describe, expect, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { clearNuxtData } from "#imports";
 
 import EtatSynchronisation from "../composant/EtatSynchronisation.vue";
 
 const ADRESSE = "/api/synchronisation/derniere";
 const JOUR_MS = 86_400_000;
+const MAINTENANT = new Date("2026-11-05T09:00:00Z");
 
 describe("état de fraîcheur des données CIRIL", () => {
-  beforeEach(() => clearNuxtData("derniere-synchronisation"));
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(MAINTENANT);
+    clearNuxtData("derniere-synchronisation");
+  });
+  afterEach(() => vi.useRealTimers());
 
   describe("Given une synchronisation terminée il y a une heure", () => {
     describe("When on affiche l'état", () => {
       test("Then les données sont annoncées à jour", async () => {
-        const uneHeure = new Date(Date.now() - 3_600_000).toISOString();
+        const uneHeure = new Date(MAINTENANT.getTime() - 3_600_000).toISOString();
         registerEndpoint(ADRESSE, () => ({ termineeLe: uneHeure }));
 
         const etat = await mountSuspended(EtatSynchronisation);
@@ -28,7 +34,7 @@ describe("état de fraîcheur des données CIRIL", () => {
   describe("Given une dernière synchronisation vieille de trois jours", () => {
     describe("When on affiche l'état", () => {
       test("Then les données sont signalées comme anciennes", async () => {
-        const troisJours = new Date(Date.now() - 3 * JOUR_MS).toISOString();
+        const troisJours = new Date(MAINTENANT.getTime() - 3 * JOUR_MS).toISOString();
         registerEndpoint(ADRESSE, () => ({ termineeLe: troisJours }));
 
         const etat = await mountSuspended(EtatSynchronisation);

@@ -4,10 +4,10 @@ import { describe, expect, test } from "vitest";
 import ElementNavigation from "../composant/ElementNavigation.vue";
 
 describe("entrée du menu de navigation", () => {
-  describe("Given l'entrée Connexion et un visiteur qui se trouve sur la page de connexion", () => {
+  describe("Given l'entrée Accueil et un visiteur qui se trouve sur la page d'accueil", () => {
     describe("When on affiche le menu", () => {
       test("Then l'entrée est signalée comme la page courante", async () => {
-        const props = { libelle: "Connexion", route: "/" };
+        const props = { libelle: "Accueil", route: "/" };
 
         const entree = await mountSuspended(ElementNavigation, { props, route: "/" });
 
@@ -16,7 +16,7 @@ describe("entrée du menu de navigation", () => {
     });
   });
 
-  describe("Given l'entrée Alertes et un visiteur qui se trouve sur la page de connexion", () => {
+  describe("Given l'entrée Alertes et un visiteur qui se trouve sur la page d'accueil", () => {
     describe("When on affiche le menu", () => {
       test("Then l'entrée n'est pas signalée comme la page courante", async () => {
         const props = { libelle: "Alertes", route: "/alertes" };

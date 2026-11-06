@@ -1,5 +1,5 @@
-export type Variante = "primaire" | "contour" | "secondaire";
-export type Taille = "normal" | "petit";
+type Variante = "primaire" | "contour" | "secondaire";
+type Taille = "normal" | "petit";
 
 export type PropsBouton = {
   variante?: Variante;

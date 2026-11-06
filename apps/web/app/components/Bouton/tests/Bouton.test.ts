@@ -37,13 +37,11 @@ describe("bouton de l'interface", () => {
   });
 
   describe("Given un bouton désactivé", () => {
-    describe("When on clique dessus", () => {
-      test("Then il ne déclenche aucun clic", async () => {
+    describe("When on l'affiche", () => {
+      test("Then il est inutilisable", async () => {
         const bouton = await mountSuspended(Bouton, { props: { disabled: true } });
 
-        await bouton.trigger("click");
-
-        expect(bouton.emitted("click")).toBeUndefined();
+        expect(bouton.attributes("disabled")).toBeDefined();
       });
     });
   });

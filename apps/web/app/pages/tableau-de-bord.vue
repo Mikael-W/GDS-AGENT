@@ -7,7 +7,7 @@ useHead({ title: "Tableau de bord - Suivi des marchés" });
 
 const { user } = useUserSession();
 const { public: config } = useRuntimeConfig();
-const estDev = config.environnement === "dev";
+const isDev = config.environment === "dev";
 
 const { data: account, refresh } = await useFetch<User | null>("/api/me", {
   default: () => null,
@@ -76,7 +76,7 @@ async function synchronizeCiril() {
       </article>
     </section>
 
-    <section v-if="estDev" class="bloc">
+    <section v-if="isDev" class="bloc">
       <h2 class="titre-carte">Synchronisation CIRIL (dev)</h2>
       <p class="discret">
         Récupère les contrats de la sandbox et les insère dans la table marchés.

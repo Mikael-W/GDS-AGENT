@@ -18,7 +18,7 @@ const { data: alert, error, refresh } = await useFetch<AlertDetail>(root);
 
 useHead({ title: "Alerte - Suivi des marchés" });
 
-const messageChargement = computed(() =>
+const loadingMessage = computed(() =>
   error.value?.statusCode === 404
     ? "Cette alerte n'existe plus : son échéance a peut-être changé. Revenez à la liste des alertes."
     : "Cette alerte n'a pas pu être chargée. Réessayez dans un instant.",
@@ -30,7 +30,7 @@ const messageChargement = computed(() =>
     <NuxtLink to="/alertes" class="retour">Retour aux alertes</NuxtLink>
 
     <p v-if="error" role="alert" class="erreur">
-      {{ messageChargement }}
+      {{ loadingMessage }}
     </p>
 
     <template v-else-if="alert">

@@ -13,7 +13,7 @@ const password = process.env.CIRIL_MOT_DE_PASSE;
 const credentials = url && user && password ? { url, user, password } : null;
 
 describe.skipIf(!credentials)("CIRIL (sandbox)", () => {
-  it("getAccessList ouvre une session Finances avec une clé non vide", async () => {
+  it("getAccessList opens a Finances session with a non-empty key", async () => {
     if (!credentials) return;
     const url = `${credentials.url.replace(/\/$/, "")}/cgi-bin/ws.exe/cgi-bin/acces.exe?ws`;
     const points = await getAccessList({
@@ -28,7 +28,7 @@ describe.skipIf(!credentials)("CIRIL (sandbox)", () => {
     expect(finance?.key.length).toBeGreaterThan(20);
   }, 30_000);
 
-  it("getContrats renvoie au moins un marché exploitable", async () => {
+  it("getContrats returns at least one usable contract", async () => {
     if (!credentials) return;
     const accessUrl = `${credentials.url.replace(/\/$/, "")}/cgi-bin/ws.exe/cgi-bin/acces.exe?ws`;
     const points = await getAccessList({
@@ -43,7 +43,7 @@ describe.skipIf(!credentials)("CIRIL (sandbox)", () => {
       access: finance.absoluteUrl,
     });
     expect(contracts.length).toBeGreaterThan(0);
-    const premier = contracts[0];
-    expect(premier?.numeroContrat?.length).toBeGreaterThan(0);
+    const first = contracts[0];
+    expect(first?.numeroContrat?.length).toBeGreaterThan(0);
   }, 60_000);
 });

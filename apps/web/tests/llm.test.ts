@@ -4,15 +4,15 @@ import { describe, expect, it } from "vitest";
 import { prompt, repondre } from "@/server/utils/llm";
 
 describe("LLM", () => {
-  it("lit le prompt hors du code et remplace ses variables", async () => {
+  it("reads the prompt outside the code and replaces its variables", async () => {
     expect(await prompt("exemple", { nom_projet: "Projet test" })).toContain("Projet test");
   });
 
-  it("signale une variable manquante", async () => {
+  it("reports a missing variable", async () => {
     await expect(prompt("exemple")).rejects.toThrow(/nom_projet/);
   });
 
-  it("renvoie le texte du modèle", async () => {
+  it("returns the model text", async () => {
     const model = new MockLanguageModelV3({
       doGenerate: async () => ({
         content: [{ type: "text", text: "Bonjour." }],

@@ -41,10 +41,10 @@ const page = computed(() =>
 );
 
 
-const precedente = () => {
+const previous = () => {
   pageNumber.value = page.value.page - 1;
 };
-const suivante = () => {
+const next = () => {
   pageNumber.value = page.value.page + 1;
 };
 </script>
@@ -133,11 +133,11 @@ const suivante = () => {
           Marchés affichés : {{ page.rows.length }} sur {{ page.total }}
         </p>
         <nav aria-label="Pagination" class="pagination">
-          <Button variant="outline" size="small" :disabled="page.page <= 1" @click="precedente">
+          <Button variant="outline" size="small" :disabled="page.page <= 1" @click="previous">
             Précédent
           </Button>
           <p class="discret">Page {{ page.page }} sur {{ page.pages }}</p>
-          <Button variant="outline" size="small" :disabled="page.page >= page.pages" @click="suivante">
+          <Button variant="outline" size="small" :disabled="page.page >= page.pages" @click="next">
             Suivant
           </Button>
         </nav>

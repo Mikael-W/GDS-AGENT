@@ -9,12 +9,12 @@ export type Page<T> = {
 
 export function paginate<T>(elements: T[], page: number): Page<T> {
   const pages = Math.max(1, Math.ceil(elements.length / PAGE_SIZE));
-  const courante = Math.min(Math.max(1, page), pages);
-  const debut = (courante - 1) * PAGE_SIZE;
+  const current = Math.min(Math.max(1, page), pages);
+  const start = (current - 1) * PAGE_SIZE;
   return {
-    rows: elements.slice(debut, debut + PAGE_SIZE),
+    rows: elements.slice(start, start + PAGE_SIZE),
     total: elements.length,
-    page: courante,
+    page: current,
     pages,
   };
 }

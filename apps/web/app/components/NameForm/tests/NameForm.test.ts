@@ -4,58 +4,58 @@ import { describe, expect, test, vi } from "vitest";
 
 import NameForm from "../NameForm.vue";
 
-describe("formulaire du nom affiché", () => {
-  describe("Given un agent dont le nom affiché est Mika", () => {
-    describe("When on ouvre le formulaire", () => {
-      test("Then le champ propose son nom actuel", async () => {
-        const formulaire = await mountSuspended(NameForm, { props: { initialName: "Mika" } });
+describe("display name form", () => {
+  describe("Given an agent whose display name is Mika", () => {
+    describe("When the form is opened", () => {
+      test("Then the field offers the current name", async () => {
+        const form = await mountSuspended(NameForm, { props: { initialName: "Mika" } });
 
-        expect(formulaire.get("input").element.value).toBe("Mika");
+        expect(form.get("input").element.value).toBe("Mika");
       });
     });
   });
 
-  describe("Given un agent qui remplace son nom par Camille Roux", () => {
-    describe("When il enregistre", () => {
-      test("Then le nouveau nom est envoyé, le formulaire confirme et prévient la page", async () => {
-        let recu: unknown;
+  describe("Given an agent who replaces the name with Camille Roux", () => {
+    describe("When the agent saves", () => {
+      test("Then the new name is sent, the form confirms and notifies the page", async () => {
+        let received: unknown;
         registerEndpoint("/api/compte/renommer", {
           method: "POST",
           handler: async (event) => {
-            recu = await readBody(event);
+            received = await readBody(event);
             return { ok: true };
           },
         });
-        const formulaire = await mountSuspended(NameForm, { props: { initialName: "Mika" } });
+        const form = await mountSuspended(NameForm, { props: { initialName: "Mika" } });
 
-        await formulaire.get("input").setValue("Camille Roux");
-        await formulaire.get("form").trigger("submit");
-        await vi.waitFor(() => expect(formulaire.text()).toContain("Enregistré."));
+        await form.get("input").setValue("Camille Roux");
+        await form.get("form").trigger("submit");
+        await vi.waitFor(() => expect(form.text()).toContain("Enregistré."));
 
-        expect(recu).toEqual({ name: "Camille Roux" });
-        expect(formulaire.emitted("saved")).toHaveLength(1);
+        expect(received).toEqual({ name: "Camille Roux" });
+        expect(form.emitted("saved")).toHaveLength(1);
       });
     });
   });
 
-  describe("Given un agent qui envoie un nom vide", () => {
-    describe("When le serveur refuse", () => {
-      test("Then le motif du refus est affiché et rien n'est confirmé", async () => {
+  describe("Given an agent who sends an empty name", () => {
+    describe("When the server refuses", () => {
+      test("Then the reason for the refusal is shown and nothing is confirmed", async () => {
         registerEndpoint("/api/compte/renommer", {
           method: "POST",
           handler: () => {
             throw createError({ statusCode: 400, data: { message: "Le nom est vide" } });
           },
         });
-        const formulaire = await mountSuspended(NameForm, { props: { initialName: "Mika" } });
+        const form = await mountSuspended(NameForm, { props: { initialName: "Mika" } });
 
-        await formulaire.get("input").setValue("");
-        await formulaire.get("form").trigger("submit");
-        await vi.waitFor(() => expect(formulaire.find("[role=alert]").exists()).toBe(true));
+        await form.get("input").setValue("");
+        await form.get("form").trigger("submit");
+        await vi.waitFor(() => expect(form.find("[role=alert]").exists()).toBe(true));
 
-        expect(formulaire.get("[role=alert]").text()).toBe("Le nom est vide");
-        expect(formulaire.text()).not.toContain("Enregistré.");
-        expect(formulaire.emitted("saved")).toBeUndefined();
+        expect(form.get("[role=alert]").text()).toBe("Le nom est vide");
+        expect(form.text()).not.toContain("Enregistré.");
+        expect(form.emitted("saved")).toBeUndefined();
       });
     });
   });

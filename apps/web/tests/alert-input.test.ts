@@ -2,89 +2,89 @@ import { describe, expect, test } from "vitest";
 
 import { AlertParameters, TreatmentBody } from "@/server/utils/alert-input";
 
-describe("commentaire d'un traitement d'alerte", () => {
-  describe("Given un commentaire écrit par un agent", () => {
-    describe("When on le valide", () => {
-      test("Then il est accepté, sans les espaces autour", () => {
-        const saisie = { comment: "  Reconduction acceptée avec le titulaire.  " };
+describe("comment on an alert treatment", () => {
+  describe("Given a comment written by an agent", () => {
+    describe("When it is validated", () => {
+      test("Then it is accepted, without the surrounding spaces", () => {
+        const input = { comment: "  Reconduction acceptée avec le titulaire.  " };
 
-        const resultat = TreatmentBody.safeParse(saisie);
+        const result = TreatmentBody.safeParse(input);
 
-        expect(resultat.data).toEqual({ comment: "Reconduction acceptée avec le titulaire." });
+        expect(result.data).toEqual({ comment: "Reconduction acceptée avec le titulaire." });
       });
     });
   });
 
-  describe("Given un commentaire vide", () => {
-    describe("When on le valide", () => {
-      test("Then il est refusé avec un message qui dit quoi faire", () => {
-        const saisie = { comment: "" };
+  describe("Given an empty comment", () => {
+    describe("When it is validated", () => {
+      test("Then it is rejected with a message that says what to do", () => {
+        const input = { comment: "" };
 
-        const resultat = TreatmentBody.safeParse(saisie);
+        const result = TreatmentBody.safeParse(input);
 
-        expect(resultat.error?.issues[0]?.message).toBe("Indiquez ce qui a été décidé");
+        expect(result.error?.issues[0]?.message).toBe("Indiquez ce qui a été décidé");
       });
     });
   });
 
-  describe("Given un commentaire fait uniquement d'espaces", () => {
-    describe("When on le valide", () => {
-      test("Then il est refusé comme un commentaire vide", () => {
-        const saisie = { comment: "     " };
+  describe("Given a comment made only of spaces", () => {
+    describe("When it is validated", () => {
+      test("Then it is rejected like an empty comment", () => {
+        const input = { comment: "     " };
 
-        const resultat = TreatmentBody.safeParse(saisie);
+        const result = TreatmentBody.safeParse(input);
 
-        expect(resultat.success).toBe(false);
+        expect(result.success).toBe(false);
       });
     });
   });
 
-  describe("Given un commentaire de 2 001 caractères", () => {
-    describe("When on le valide", () => {
-      test("Then il est refusé car trop long", () => {
-        const saisie = { comment: "a".repeat(2001) };
+  describe("Given a comment of 2,001 characters", () => {
+    describe("When it is validated", () => {
+      test("Then it is rejected as too long", () => {
+        const input = { comment: "a".repeat(2001) };
 
-        const resultat = TreatmentBody.safeParse(saisie);
+        const result = TreatmentBody.safeParse(input);
 
-        expect(resultat.success).toBe(false);
+        expect(result.success).toBe(false);
       });
     });
   });
 });
 
-describe("alerte désignée dans l'adresse", () => {
-  describe("Given la référence AO 25075 et la famille reconduction", () => {
-    describe("When on les valide", () => {
-      test("Then l'alerte est reconnue", () => {
+describe("alert designated in the address", () => {
+  describe("Given reference AO 25075 and the reconduction family", () => {
+    describe("When they are validated", () => {
+      test("Then the alert is recognised", () => {
         const parameters = { reference: "AO 25075", family: "reconduction" };
 
-        const resultat = AlertParameters.safeParse(parameters);
+        const result = AlertParameters.safeParse(parameters);
 
-        expect(resultat.success).toBe(true);
+        expect(result.success).toBe(true);
       });
     });
   });
 
-  describe("Given une famille qui n'existe pas", () => {
-    describe("When on la valide", () => {
-      test("Then l'alerte est refusée", () => {
+  describe("Given a family that does not exist", () => {
+    describe("When it is validated", () => {
+      test("Then the alert is rejected", () => {
         const parameters = { reference: "AO 25075", family: "inconnue" };
 
-        const resultat = AlertParameters.safeParse(parameters);
+        const result = AlertParameters.safeParse(parameters);
 
-        expect(resultat.success).toBe(false);
+        expect(result.success).toBe(false);
       });
     });
   });
 
-  describe("Given une référence vide", () => {
-    describe("When on la valide", () => {
-      test("Then l'alerte est refusée", () => {
+  describe("Given an empty reference", () => {
+    describe("When it is validated", () => {
+      test("Then the alert is rejected", () => {
         const parameters = { reference: " ", family: "reconduction" };
 
-        const resultat = AlertParameters.safeParse(parameters);
+        const result = AlertParameters.safeParse(parameters);
 
-        expect(resultat.success).toBe(false);
+        expect(result.success).toBe(false);
       });
     });
   });

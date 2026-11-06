@@ -2,10 +2,10 @@ import { describe, expect, test } from "vitest";
 
 import { PAGE_SIZE, paginate, parisDay, plural } from "@/shared/domain/display";
 
-describe("accord au pluriel", () => {
-  describe("Given un seul marché", () => {
-    describe("When on formule le nombre", () => {
-      test("Then le mot reste au singulier", () => {
+describe("plural agreement", () => {
+  describe("Given a single contract", () => {
+    describe("When the number is worded", () => {
+      test("Then the word stays singular", () => {
         const label = plural(1, "marché");
 
         expect(label).toBe("1 marché");
@@ -13,9 +13,9 @@ describe("accord au pluriel", () => {
     });
   });
 
-  describe("Given trois marchés", () => {
-    describe("When on formule le nombre", () => {
-      test("Then le mot prend un s", () => {
+  describe("Given three contracts", () => {
+    describe("When the number is worded", () => {
+      test("Then the word takes an s", () => {
         const label = plural(3, "marché");
 
         expect(label).toBe("3 marchés");
@@ -24,49 +24,49 @@ describe("accord au pluriel", () => {
   });
 });
 
-describe("pagination d'une liste", () => {
-  const nombreDeLignes = PAGE_SIZE * 2 + 3;
-  const liste = Array.from({ length: nombreDeLignes }, (_, i) => `AO ${i}`);
+describe("list pagination", () => {
+  const rowCount = PAGE_SIZE * 2 + 3;
+  const list = Array.from({ length: rowCount }, (_, i) => `AO ${i}`);
 
-  describe("Given vingt-trois lignes", () => {
-    describe("When on demande la dernière page", () => {
-      test("Then elle porte les trois dernières lignes", () => {
-        const resultat = paginate(liste, 3);
+  describe("Given twenty-three rows", () => {
+    describe("When the last page is requested", () => {
+      test("Then it carries the last three rows", () => {
+        const result = paginate(list, 3);
 
-        expect(resultat.rows).toHaveLength(3);
+        expect(result.rows).toHaveLength(3);
       });
 
-      test("Then le total reste celui de la liste entière", () => {
-        const resultat = paginate(liste, 3);
+      test("Then the total remains that of the whole list", () => {
+        const result = paginate(list, 3);
 
-        expect(resultat.total).toBe(nombreDeLignes);
+        expect(result.total).toBe(rowCount);
       });
     });
 
-    describe("When on demande une page au-delà de la dernière", () => {
-      test("Then on retombe sur la dernière page", () => {
-        const resultat = paginate(liste, 9);
+    describe("When a page beyond the last is requested", () => {
+      test("Then we fall back on the last page", () => {
+        const result = paginate(list, 9);
 
-        expect(resultat.page).toBe(3);
+        expect(result.page).toBe(3);
       });
     });
   });
 
-  describe("Given une liste vide", () => {
-    describe("When on demande la première page", () => {
-      test("Then il reste une page, sans ligne", () => {
-        const resultat = paginate([], 1);
+  describe("Given an empty list", () => {
+    describe("When the first page is requested", () => {
+      test("Then one page remains, without rows", () => {
+        const result = paginate([], 1);
 
-        expect(resultat).toEqual({ rows: [], total: 0, page: 1, pages: 1 });
+        expect(result).toEqual({ rows: [], total: 0, page: 1, pages: 1 });
       });
     });
   });
 });
 
-describe("jour civil à Paris", () => {
-  describe("Given 23 h 30 à Greenwich le 4 novembre 2026, soit minuit passé à Paris", () => {
-    describe("When on demande le jour civil à Paris", () => {
-      test("Then c'est déjà le 5 novembre", () => {
+describe("calendar day in Paris", () => {
+  describe("Given 23:30 in Greenwich on 4 November 2026, which is past midnight in Paris", () => {
+    describe("When the calendar day in Paris is requested", () => {
+      test("Then it is already 5 November", () => {
         const instant = new Date("2026-11-04T23:30:00Z");
 
         const date = parisDay(instant);
@@ -76,9 +76,9 @@ describe("jour civil à Paris", () => {
     });
   });
 
-  describe("Given 22 h 30 à Greenwich le 4 novembre 2026, soit 23 h 30 à Paris", () => {
-    describe("When on demande le jour civil à Paris", () => {
-      test("Then c'est encore le 4 novembre", () => {
+  describe("Given 22:30 in Greenwich on 4 November 2026, which is 23:30 in Paris", () => {
+    describe("When the calendar day in Paris is requested", () => {
+      test("Then it is still 4 November", () => {
         const instant = new Date("2026-11-04T22:30:00Z");
 
         const date = parisDay(instant);

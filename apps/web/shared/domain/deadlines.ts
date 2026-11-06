@@ -42,22 +42,22 @@ export type Alert = {
 const DAY_MS = 86_400_000;
 
 function inDays(iso: string): number {
-  const annee = Number(iso.slice(0, 4));
+  const year = Number(iso.slice(0, 4));
   const month = Number(iso.slice(5, 7));
   const day = Number(iso.slice(8, 10));
-  return Date.UTC(annee, month - 1, day) / DAY_MS;
+  return Date.UTC(year, month - 1, day) / DAY_MS;
 }
 
-function ajouter(iso: string, days: number): string {
+function addDays(iso: string, days: number): string {
   return new Date((inDays(iso) + days) * DAY_MS).toISOString().slice(0, 10);
 }
 
-function ecart(de: string, a: string): number {
-  return inDays(a) - inDays(de);
+function daysBetween(from: string, to: string): number {
+  return inDays(to) - inDays(from);
 }
 
-function withinWindow(today: string, deadline: string, fenetre: number): boolean {
-  return ecart(today, deadline) <= fenetre;
+function withinWindow(today: string, deadline: string, window: number): boolean {
+  return daysBetween(today, deadline) <= window;
 }
 
 function alert(
@@ -71,7 +71,7 @@ function alert(
     family,
     reference: contract.reference,
     deadlineOn,
-    daysRemaining: ecart(today, deadlineOn),
+    daysRemaining: daysBetween(today, deadlineOn),
     explanation,
   };
 }
@@ -79,20 +79,20 @@ function alert(
 export function evaluate(
   contract: TrackedContract,
   today: string,
-  fenetres: Windows = WINDOWS,
+  windows: Windows = WINDOWS,
 ): Alert[] {
   if (!contract.active || contract.settled) return [];
 
   const alerts: Alert[] = [];
 
   if (contract.endsOn && contract.tacitRenewal !== null) {
-    const limite = ajouter(contract.endsOn, -fenetres.reconduction);
-    if (withinWindow(today, limite, 0)) {
+    const triggerOn = addDays(contract.endsOn, -windows.reconduction);
+    if (withinWindow(today, triggerOn, 0)) {
       alerts.push(
         alert(
           "reconduction",
           contract,
-          limite,
+          triggerOn,
           today,
           contract.tacitRenewal
             ? `Reconduction tacite au ${contract.endsOn} : sans décision contraire, le marché repart.`
@@ -102,7 +102,7 @@ export function evaluate(
     }
   }
 
-  if (contract.warrantyEndsOn && withinWindow(today, contract.warrantyEndsOn, fenetres.garantie)) {
+  if (contract.warrantyEndsOn && withinWindow(today, contract.warrantyEndsOn, windows.garantie)) {
     alerts.push(
       alert(
         "garantie",
@@ -117,7 +117,7 @@ export function evaluate(
   if (
     contract.endsOn &&
     !contract.receivedOn &&
-    withinWindow(today, contract.endsOn, fenetres.reception)
+    withinWindow(today, contract.endsOn, windows.reception)
   ) {
     alerts.push(
       alert(
@@ -131,15 +131,15 @@ export function evaluate(
   }
 
   if (contract.startsOn) {
-    const point = ajouter(contract.startsOn, 182);
-    if (withinWindow(today, point, fenetres.point_six_mois)) {
+    const checkpoint = addDays(contract.startsOn, 182);
+    if (withinWindow(today, checkpoint, windows.point_six_mois)) {
       alerts.push(
         alert(
           "point_six_mois",
           contract,
-          point,
+          checkpoint,
           today,
-          `Six mois d'exécution au ${point} : point d'étape avec le titulaire.`,
+          `Six mois d'exécution au ${checkpoint} : point d'étape avec le titulaire.`,
         ),
       );
     }
@@ -147,13 +147,13 @@ export function evaluate(
 
   if (contract.hasPurchaseOrders && contract.startsOn) {
     const depuis = contract.lastCommitmentOn ?? contract.startsOn;
-    const limite = ajouter(depuis, fenetres.sans_bon_de_commande);
-    if (withinWindow(today, limite, 0)) {
+    const triggerOn = addDays(depuis, windows.sans_bon_de_commande);
+    if (withinWindow(today, triggerOn, 0)) {
       alerts.push(
         alert(
           "sans_bon_de_commande",
           contract,
-          limite,
+          triggerOn,
           today,
           contract.lastCommitmentOn
             ? `Aucun bon de commande depuis le ${contract.lastCommitmentOn}.`
@@ -169,10 +169,10 @@ export function evaluate(
 export function evaluatePortfolio(
   contracts: TrackedContract[],
   today: string,
-  fenetres: Windows = WINDOWS,
+  windows: Windows = WINDOWS,
 ): Alert[] {
   return contracts
-    .flatMap((m) => evaluate(m, today, fenetres))
+    .flatMap((m) => evaluate(m, today, windows))
     .sort((a, b) => a.daysRemaining - b.daysRemaining);
 }
 
@@ -181,11 +181,11 @@ export const SCHEDULE_HORIZON = 183;
 export function evaluateSchedule(
   contracts: TrackedContract[],
   today: string,
-  horizonJours: number = SCHEDULE_HORIZON,
-  fenetres: Windows = WINDOWS,
+  horizonDays: number = SCHEDULE_HORIZON,
+  windows: Windows = WINDOWS,
 ): Alert[] {
-  const horizon = ajouter(today, horizonJours);
-  return evaluatePortfolio(contracts, horizon, fenetres)
+  const horizon = addDays(today, horizonDays);
+  return evaluatePortfolio(contracts, horizon, windows)
     .filter((a) => a.deadlineOn <= horizon)
-    .map((a) => ({ ...a, daysRemaining: ecart(today, a.deadlineOn) }));
+    .map((a) => ({ ...a, daysRemaining: daysBetween(today, a.deadlineOn) }));
 }

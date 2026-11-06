@@ -2,7 +2,7 @@ import { createDatabase } from "@projet/db";
 import * as Sentry from "@sentry/node";
 
 import { readEnv } from "./env";
-import { demarrer } from "./worker";
+import { start } from "./worker";
 
 const env = readEnv(process.env);
 if (env.SENTRY_DSN) {
@@ -10,7 +10,7 @@ if (env.SENTRY_DSN) {
 }
 
 const db = createDatabase(env.DATABASE_URL, 5);
-const boss = await demarrer(env.DATABASE_URL, db);
+const boss = await start(env.DATABASE_URL, db);
 console.log(`worker démarré (${env.GIT_SHA})`);
 
 // Arrêt propre : les tâches en cours finissent, aucune n'est reprise ensuite

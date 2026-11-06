@@ -4,40 +4,40 @@ import { clearNuxtData } from "#imports";
 
 import Sidebar from "../Sidebar.vue";
 
-describe("barre latérale de l'application", () => {
+describe("application sidebar", () => {
   beforeEach(() => {
     clearNuxtData("derniere-synchronisation");
     registerEndpoint("/api/synchronisation/derniere", () => ({ finishedOn: null }));
   });
 
-  describe("Given un agent connecté", () => {
-    describe("When on affiche la barre latérale", () => {
-      test("Then la collectivité est nommée", async () => {
-        const barre = await mountSuspended(Sidebar);
+  describe("Given a logged-in agent", () => {
+    describe("When the sidebar is displayed", () => {
+      test("Then the community is named", async () => {
+        const sidebar = await mountSuspended(Sidebar);
 
-        expect(barre.text()).toContain("CC Golfe de Saint-Tropez");
+        expect(sidebar.text()).toContain("CC Golfe de Saint-Tropez");
       });
 
-      test("Then le menu propose les quatre écrans de suivi, dans l'ordre", async () => {
-        const barre = await mountSuspended(Sidebar);
+      test("Then the menu offers the four monitoring screens, in order", async () => {
+        const sidebar = await mountSuspended(Sidebar);
 
-        const entrees = barre.findAll("nav a").map((lien) => lien.text());
+        const items = sidebar.findAll("nav a").map((link) => link.text());
 
-        expect(entrees).toEqual(["Tableau de bord", "Alertes", "Marchés", "Échéancier"]);
+        expect(items).toEqual(["Tableau de bord", "Alertes", "Marchés", "Échéancier"]);
       });
 
-      test("Then l'état des données CIRIL est visible", async () => {
-        const barre = await mountSuspended(Sidebar);
+      test("Then the CIRIL data status is visible", async () => {
+        const sidebar = await mountSuspended(Sidebar);
 
-        expect(barre.text()).toContain("Aucune lecture de CIRIL");
+        expect(sidebar.text()).toContain("Aucune lecture de CIRIL");
       });
 
-      test("Then un bouton permet de se déconnecter", async () => {
-        const barre = await mountSuspended(Sidebar);
+      test("Then a button allows logging out", async () => {
+        const sidebar = await mountSuspended(Sidebar);
 
-        const deconnexion = barre.get("form[action='/auth/deconnexion']");
+        const logout = sidebar.get("form[action='/auth/deconnexion']");
 
-        expect(deconnexion.text()).toBe("Se déconnecter");
+        expect(logout.text()).toBe("Se déconnecter");
       });
     });
   });

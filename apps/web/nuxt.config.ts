@@ -37,7 +37,7 @@ export default defineNuxtConfig({
     public: {
       sentryDsn: process.env.SENTRY_DSN ?? "",
       gitSha: process.env.GIT_SHA ?? "dev",
-      environnement: process.env.ENVIRONNEMENT ?? "dev",
+      environment: process.env.ENVIRONNEMENT ?? "dev",
     },
   },
 });

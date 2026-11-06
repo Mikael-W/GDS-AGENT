@@ -7,42 +7,42 @@ import TreatmentForm from "../TreatmentForm.vue";
 const root = "/api/alertes/CON001/reconduction";
 const props = { root };
 
-describe("formulaire de traitement d'une alerte", () => {
-  describe("Given une alerte dont personne n'a encore écrit la décision", () => {
-    describe("When on ouvre le formulaire", () => {
-      test("Then le bouton Marquer comme traité est désactivé tant que le commentaire est vide", async () => {
-        const formulaire = await mountSuspended(TreatmentForm, { props });
+describe("alert treatment form", () => {
+  describe("Given an alert whose decision nobody has written yet", () => {
+    describe("When the form is opened", () => {
+      test("Then the Marquer comme traité button is disabled while the comment is empty", async () => {
+        const form = await mountSuspended(TreatmentForm, { props });
 
-        expect(formulaire.get("button").attributes("disabled")).toBeDefined();
+        expect(form.get("button").attributes("disabled")).toBeDefined();
       });
     });
   });
 
-  describe("Given un agent qui écrit Contrat reconduit, visa du service", () => {
-    describe("When il marque l'alerte comme traitée", () => {
-      test("Then le commentaire saisi est envoyé tel quel et la page est prévenue", async () => {
-        let recu: unknown;
+  describe("Given an agent who writes Contrat reconduit, visa du service", () => {
+    describe("When the agent marks the alert as handled", () => {
+      test("Then the typed comment is sent as is and the page is notified", async () => {
+        let received: unknown;
         registerEndpoint(`${root}/traitement`, {
           method: "POST",
           handler: async (event) => {
-            recu = await readBody(event);
+            received = await readBody(event);
             return { ok: true };
           },
         });
-        const formulaire = await mountSuspended(TreatmentForm, { props });
+        const form = await mountSuspended(TreatmentForm, { props });
 
-        await formulaire.get("textarea").setValue("Contrat reconduit, visa du service");
-        await formulaire.get("form").trigger("submit");
-        await vi.waitFor(() => expect(formulaire.emitted("handled")).toHaveLength(1));
+        await form.get("textarea").setValue("Contrat reconduit, visa du service");
+        await form.get("form").trigger("submit");
+        await vi.waitFor(() => expect(form.emitted("handled")).toHaveLength(1));
 
-        expect(recu).toEqual({ comment: "Contrat reconduit, visa du service" });
+        expect(received).toEqual({ comment: "Contrat reconduit, visa du service" });
       });
     });
   });
 
-  describe("Given une alerte déjà traitée par un collègue", () => {
-    describe("When le serveur refuse le traitement", () => {
-      test("Then le motif du refus est affiché et la page n'est pas prévenue", async () => {
+  describe("Given an alert already handled by a colleague", () => {
+    describe("When the server refuses the treatment", () => {
+      test("Then the reason for the refusal is shown and the page is not notified", async () => {
         registerEndpoint(`${root}/traitement`, {
           method: "POST",
           handler: () => {
@@ -52,36 +52,36 @@ describe("formulaire de traitement d'une alerte", () => {
             });
           },
         });
-        const formulaire = await mountSuspended(TreatmentForm, { props });
+        const form = await mountSuspended(TreatmentForm, { props });
 
-        await formulaire.get("textarea").setValue("Contrat reconduit");
-        await formulaire.get("form").trigger("submit");
-        await vi.waitFor(() => expect(formulaire.find("[role=alert]").exists()).toBe(true));
+        await form.get("textarea").setValue("Contrat reconduit");
+        await form.get("form").trigger("submit");
+        await vi.waitFor(() => expect(form.find("[role=alert]").exists()).toBe(true));
 
-        expect(formulaire.get("[role=alert]").text()).toBe(
+        expect(form.get("[role=alert]").text()).toBe(
           "Cette alerte a déjà été traitée par un collègue.",
         );
-        expect(formulaire.emitted("handled")).toBeUndefined();
+        expect(form.emitted("handled")).toBeUndefined();
       });
     });
   });
 
-  describe("Given un incident du serveur sans rapport avec la saisie", () => {
-    describe("When l'agent tente de marquer l'alerte comme traitée", () => {
-      test("Then il lit un message qui parle du produit, pas de l'incident", async () => {
+  describe("Given a server incident unrelated to the input", () => {
+    describe("When the agent tries to mark the alert as handled", () => {
+      test("Then a message about the product is read, not about the incident", async () => {
         registerEndpoint(`${root}/traitement`, {
           method: "POST",
           handler: () => {
             throw createError({ statusCode: 500, data: { message: "Internal Server Error" } });
           },
         });
-        const formulaire = await mountSuspended(TreatmentForm, { props });
+        const form = await mountSuspended(TreatmentForm, { props });
 
-        await formulaire.get("textarea").setValue("Contrat reconduit");
-        await formulaire.get("form").trigger("submit");
-        await vi.waitFor(() => expect(formulaire.find("[role=alert]").exists()).toBe(true));
+        await form.get("textarea").setValue("Contrat reconduit");
+        await form.get("form").trigger("submit");
+        await vi.waitFor(() => expect(form.find("[role=alert]").exists()).toBe(true));
 
-        expect(formulaire.get("[role=alert]").text()).toBe(
+        expect(form.get("[role=alert]").text()).toBe(
           "Le traitement n'a pas pu être enregistré. Réessayez dans un instant.",
         );
       });

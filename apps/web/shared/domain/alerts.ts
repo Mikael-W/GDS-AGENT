@@ -73,15 +73,15 @@ export function filter(alerts: AlertListItem[], criteria: AlertCriteria): AlertL
 }
 
 export function listTitle(view: AlertView, total: number): string {
-  const complement = view === "depassees" ? "dépassée" : "à traiter";
-  return `${plural(total, "alerte")} ${complement}${view === "depassees" && total > 1 ? "s" : ""}`;
+  const qualifier = view === "depassees" ? "dépassée" : "à traiter";
+  return `${plural(total, "alerte")} ${qualifier}${view === "depassees" && total > 1 ? "s" : ""}`;
 }
 
 export function deadlineLabel(daysRemaining: number): string {
   if (daysRemaining === 0) return "Aujourd'hui";
   const days = Math.abs(daysRemaining);
-  const unite = days > 1 ? "jours" : "jour";
-  return daysRemaining < 0 ? `Dépassée de ${days} ${unite}` : `Dans ${days} ${unite}`;
+  const unit = days > 1 ? "jours" : "jour";
+  return daysRemaining < 0 ? `Dépassée de ${days} ${unit}` : `Dans ${days} ${unit}`;
 }
 
 export function formatDate(iso: string | null): string {

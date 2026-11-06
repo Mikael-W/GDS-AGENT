@@ -55,49 +55,49 @@ const portfolio = [
   }),
 ];
 
-const toutes = { view: "a_traiter", service: "", family: "", period: "toutes" } as const;
+const allPeriods = { view: "a_traiter", service: "", family: "", period: "toutes" } as const;
 
-describe("urgence d'une alerte", () => {
-  describe("Given une alerte dont l'échéance est passée depuis 16 jours", () => {
-    describe("When on évalue son urgence", () => {
-      test("Then elle est en retard", () => {
+describe("urgency of an alert", () => {
+  describe("Given an alert whose deadline passed 16 days ago", () => {
+    describe("When its urgency is evaluated", () => {
+      test("Then it is late", () => {
         const a = alert({ daysRemaining: -16 });
 
-        const niveau = urgency(a);
+        const level = urgency(a);
 
-        expect(niveau).toBe("retard");
+        expect(level).toBe("retard");
         expect(isOverdue(a)).toBe(true);
       });
     });
   });
 
-  describe("Given une alerte à 30 jours de l'échéance", () => {
-    describe("When on évalue son urgence", () => {
-      test("Then elle demande de l'attention", () => {
+  describe("Given an alert 30 days from the deadline", () => {
+    describe("When its urgency is evaluated", () => {
+      test("Then it requires attention", () => {
         const a = alert({ daysRemaining: 30 });
 
-        const niveau = urgency(a);
+        const level = urgency(a);
 
-        expect(niveau).toBe("attention");
+        expect(level).toBe("attention");
       });
     });
   });
 
-  describe("Given une alerte à 61 jours de l'échéance", () => {
-    describe("When on évalue son urgence", () => {
-      test("Then elle est simplement à surveiller", () => {
+  describe("Given an alert 61 days from the deadline", () => {
+    describe("When its urgency is evaluated", () => {
+      test("Then it simply needs watching", () => {
         const a = alert({ daysRemaining: 61 });
 
-        const niveau = urgency(a);
+        const level = urgency(a);
 
-        expect(niveau).toBe("information");
+        expect(level).toBe("information");
       });
     });
   });
 
-  describe("Given une alerte dont l'échéance tombe aujourd'hui", () => {
-    describe("When on évalue son urgence", () => {
-      test("Then elle n'est pas encore dépassée", () => {
+  describe("Given an alert whose deadline falls today", () => {
+    describe("When its urgency is evaluated", () => {
+      test("Then it is not overdue yet", () => {
         const a = alert({ daysRemaining: 0 });
 
         const overdue = isOverdue(a);
@@ -108,10 +108,10 @@ describe("urgence d'une alerte", () => {
   });
 });
 
-describe("synthèse des alertes", () => {
-  describe("Given six alertes dont deux dépassées", () => {
-    describe("When on compte les alertes", () => {
-      test("Then six sont à traiter dont deux dépassées", () => {
+describe("alerts summary", () => {
+  describe("Given six alerts, two of them overdue", () => {
+    describe("When the alerts are counted", () => {
+      test("Then six are to treat, two of them overdue", () => {
         const summary = summarize(portfolio);
 
         expect(summary).toEqual({ toTreat: 6, overdue: 2 });
@@ -120,37 +120,37 @@ describe("synthèse des alertes", () => {
   });
 });
 
-describe("filtres de la liste des alertes", () => {
-  describe("Given six alertes à traiter", () => {
-    describe("When on garde les alertes dépassées", () => {
-      test("Then seules les deux échéances passées restent", () => {
-        const resultat = filter(portfolio, { ...toutes, view: "depassees" });
+describe("alert list filters", () => {
+  describe("Given six alerts to treat", () => {
+    describe("When overdue alerts are kept", () => {
+      test("Then only the two past deadlines remain", () => {
+        const result = filter(portfolio, { ...allPeriods, view: "depassees" });
 
-        expect(resultat.map((a) => a.reference)).toEqual(["MA 24029", "AO 24034"]);
+        expect(result.map((a) => a.reference)).toEqual(["MA 24029", "AO 24034"]);
       });
     });
 
-    describe("When on choisit le service Travaux", () => {
-      test("Then seules ses trois alertes restent", () => {
-        const resultat = filter(portfolio, { ...toutes, service: "Travaux" });
+    describe("When the Travaux department is chosen", () => {
+      test("Then only its three alerts remain", () => {
+        const result = filter(portfolio, { ...allPeriods, service: "Travaux" });
 
-        expect(resultat.map((a) => a.reference)).toEqual(["MA 24029", "MA 24036", "MA 26045"]);
+        expect(result.map((a) => a.reference)).toEqual(["MA 24029", "MA 24036", "MA 26045"]);
       });
     });
 
-    describe("When on choisit la famille reconduction", () => {
-      test("Then seules les deux reconductions restent", () => {
-        const resultat = filter(portfolio, { ...toutes, family: "reconduction" });
+    describe("When the reconduction family is chosen", () => {
+      test("Then only the two reconductions remain", () => {
+        const result = filter(portfolio, { ...allPeriods, family: "reconduction" });
 
-        expect(resultat.map((a) => a.reference)).toEqual(["AO 25075", "AO 26028"]);
+        expect(result.map((a) => a.reference)).toEqual(["AO 25075", "AO 26028"]);
       });
     });
 
-    describe("When on regarde les 30 prochains jours", () => {
-      test("Then les alertes dépassées restent visibles avec celles qui tombent d'ici un mois", () => {
-        const resultat = filter(portfolio, { ...toutes, period: "30" });
+    describe("When looking at the next 30 days", () => {
+      test("Then overdue alerts stay visible with those falling within a month", () => {
+        const result = filter(portfolio, { ...allPeriods, period: "30" });
 
-        expect(resultat.map((a) => a.reference)).toEqual([
+        expect(result.map((a) => a.reference)).toEqual([
           "MA 24029",
           "AO 24034",
           "AO 25075",
@@ -160,32 +160,32 @@ describe("filtres de la liste des alertes", () => {
       });
     });
 
-    describe("When on combine le service Travaux et la période de 30 jours", () => {
-      test("Then les deux critères s'appliquent ensemble", () => {
-        const resultat = filter(portfolio, { ...toutes, service: "Travaux", period: "30" });
+    describe("When the Travaux department and the 30-day period are combined", () => {
+      test("Then both criteria apply together", () => {
+        const result = filter(portfolio, { ...allPeriods, service: "Travaux", period: "30" });
 
-        expect(resultat.map((a) => a.reference)).toEqual(["MA 24029", "MA 24036", "MA 26045"]);
+        expect(result.map((a) => a.reference)).toEqual(["MA 24029", "MA 24036", "MA 26045"]);
       });
     });
   });
 });
 
-describe("services proposés dans le filtre", () => {
-  describe("Given des alertes de trois services, dont une sans service", () => {
-    describe("When on liste les services", () => {
-      test("Then chaque service apparaît une fois, par ordre alphabétique", () => {
-        const liste = departments([...portfolio, alert({ service: null })]);
+describe("departments offered in the filter", () => {
+  describe("Given alerts from three departments, one of them without department", () => {
+    describe("When departments are listed", () => {
+      test("Then each department appears once, in alphabetical order", () => {
+        const list = departments([...portfolio, alert({ service: null })]);
 
-        expect(liste).toEqual(["Espaces verts", "Pôle eau", "Travaux"]);
+        expect(list).toEqual(["Espaces verts", "Pôle eau", "Travaux"]);
       });
     });
   });
 });
 
-describe("libellé d'échéance", () => {
-  describe("Given une échéance dépassée de 48 jours", () => {
-    describe("When on la formule", () => {
-      test("Then on lit qu'elle est dépassée de 48 jours", () => {
+describe("deadline label", () => {
+  describe("Given a deadline overdue by 48 days", () => {
+    describe("When it is worded", () => {
+      test("Then it reads that it is overdue by 48 days", () => {
         const label = deadlineLabel(-48);
 
         expect(label).toBe("Dépassée de 48 jours");
@@ -193,9 +193,9 @@ describe("libellé d'échéance", () => {
     });
   });
 
-  describe("Given une échéance dépassée d'un jour", () => {
-    describe("When on la formule", () => {
-      test("Then le mot jour reste au singulier", () => {
+  describe("Given a deadline overdue by one day", () => {
+    describe("When it is worded", () => {
+      test("Then the word day stays singular", () => {
         const label = deadlineLabel(-1);
 
         expect(label).toBe("Dépassée de 1 jour");
@@ -203,9 +203,9 @@ describe("libellé d'échéance", () => {
     });
   });
 
-  describe("Given une échéance dans 4 jours", () => {
-    describe("When on la formule", () => {
-      test("Then on lit qu'elle tombe dans 4 jours", () => {
+  describe("Given a deadline in 4 days", () => {
+    describe("When it is worded", () => {
+      test("Then it reads that it falls in 4 days", () => {
         const label = deadlineLabel(4);
 
         expect(label).toBe("Dans 4 jours");
@@ -213,9 +213,9 @@ describe("libellé d'échéance", () => {
     });
   });
 
-  describe("Given une échéance aujourd'hui", () => {
-    describe("When on la formule", () => {
-      test("Then on lit aujourd'hui", () => {
+  describe("Given a deadline today", () => {
+    describe("When it is worded", () => {
+      test("Then it reads today", () => {
         const label = deadlineLabel(0);
 
         expect(label).toBe("Aujourd'hui");
@@ -224,10 +224,10 @@ describe("libellé d'échéance", () => {
   });
 });
 
-describe("date affichée", () => {
-  describe("Given l'échéance du 18 septembre 2026", () => {
-    describe("When on la formate", () => {
-      test("Then elle s'écrit jour, mois, année", () => {
+describe("displayed date", () => {
+  describe("Given the deadline of 18 September 2026", () => {
+    describe("When it is formatted", () => {
+      test("Then it is written day, month, year", () => {
         const text = formatDate("2026-09-18");
 
         expect(text).toBe("18/09/2026");
@@ -236,10 +236,10 @@ describe("date affichée", () => {
   });
 });
 
-describe("titre de la liste", () => {
-  describe("Given l'onglet À traiter avec six alertes", () => {
-    describe("When on formule le titre", () => {
-      test("Then on lit six alertes à traiter", () => {
+describe("list title", () => {
+  describe("Given the To treat tab with six alerts", () => {
+    describe("When the title is worded", () => {
+      test("Then it reads six alerts to treat", () => {
         const title = listTitle("a_traiter", 6);
 
         expect(title).toBe("6 alertes à traiter");
@@ -247,9 +247,9 @@ describe("titre de la liste", () => {
     });
   });
 
-  describe("Given l'onglet Dont dépassées avec deux alertes", () => {
-    describe("When on formule le titre", () => {
-      test("Then on lit deux alertes dépassées, accordées au pluriel", () => {
+  describe("Given the Overdue tab with two alerts", () => {
+    describe("When the title is worded", () => {
+      test("Then it reads two overdue alerts, in the plural", () => {
         const title = listTitle("depassees", 2);
 
         expect(title).toBe("2 alertes dépassées");
@@ -257,9 +257,9 @@ describe("titre de la liste", () => {
     });
   });
 
-  describe("Given l'onglet Dont dépassées avec une seule alerte", () => {
-    describe("When on formule le titre", () => {
-      test("Then on lit une alerte dépassée, au singulier", () => {
+  describe("Given the Overdue tab with a single alert", () => {
+    describe("When the title is worded", () => {
+      test("Then it reads one overdue alert, in the singular", () => {
         const title = listTitle("depassees", 1);
 
         expect(title).toBe("1 alerte dépassée");
@@ -268,10 +268,10 @@ describe("titre de la liste", () => {
   });
 });
 
-describe("date absente dans CIRIL", () => {
-  describe("Given un marché dont la date de notification n'est pas renseignée", () => {
-    describe("When on la formate", () => {
-      test("Then on lit qu'elle n'est pas renseignée", () => {
+describe("date missing in CIRIL", () => {
+  describe("Given a contract whose notification date is not filled in", () => {
+    describe("When it is formatted", () => {
+      test("Then it reads that it is not filled in", () => {
         const text = formatDate(null);
 
         expect(text).toBe("Non renseignée");
@@ -280,15 +280,15 @@ describe("date absente dans CIRIL", () => {
   });
 });
 
-describe("lien vers le détail d'une alerte", () => {
-  describe("Given l'alerte de reconduction du marché AO 25075", () => {
-    describe("When on construit son lien", () => {
-      test("Then la référence est protégée pour l'adresse et la famille suit", () => {
+describe("link to an alert detail", () => {
+  describe("Given the reconduction alert of contract AO 25075", () => {
+    describe("When its link is built", () => {
+      test("Then the reference is escaped for the address and the family follows", () => {
         const a = alert({ reference: "AO 25075", family: "reconduction" });
 
-        const lien = alertLink(a);
+        const link = alertLink(a);
 
-        expect(lien).toBe("/alertes/AO%2025075/reconduction");
+        expect(link).toBe("/alertes/AO%2025075/reconduction");
       });
     });
   });

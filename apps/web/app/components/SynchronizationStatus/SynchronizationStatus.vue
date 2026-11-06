@@ -2,7 +2,7 @@
 import { freshness } from "~/domain/freshness";
 import type { LastSynchronization } from "./types/SynchronizationStatus";
 
-const RAFRAICHISSEMENT_MS = 60_000;
+const REFRESH_INTERVAL_MS = 60_000;
 
 const { data, error, refresh } = await useFetch<LastSynchronization>(
   "/api/synchronisation/derniere",
@@ -18,14 +18,14 @@ const state = computed(() =>
   ),
 );
 
-let minuteur: ReturnType<typeof setInterval>;
+let timer: ReturnType<typeof setInterval>;
 onMounted(() => {
-  minuteur = setInterval(() => {
+  timer = setInterval(() => {
     now.value = Date.now();
     refresh();
-  }, RAFRAICHISSEMENT_MS);
+  }, REFRESH_INTERVAL_MS);
 });
-onUnmounted(() => clearInterval(minuteur));
+onUnmounted(() => clearInterval(timer));
 </script>
 
 <template>

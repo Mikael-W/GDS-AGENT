@@ -8,7 +8,7 @@ import { journal } from "@/server/utils/synchronizations";
 
 const url = process.env.TEST_DATABASE_URL;
 
-const bilan = { received: 3, inserted: 1, updated: 1 };
+const report = { received: 3, inserted: 1, updated: 1 };
 
 describe.skipIf(!url)("journal des synchronisations avec CIRIL", () => {
   const db = createDatabase(url ?? "", 1);
@@ -21,30 +21,30 @@ describe.skipIf(!url)("journal des synchronisations avec CIRIL", () => {
   });
   afterAll(() => db.$client.end());
 
-  describe("Given une lecture de CIRIL qui ramène trois marchés dont un nouveau et un modifié", () => {
-    describe("When la synchronisation se termine bien", () => {
-      let pendantLaLecture: string | undefined;
+  describe("Given a CIRIL reading that returns three contracts, one new and one modified", () => {
+    describe("When the synchronization ends well", () => {
+      let duringReading: string | undefined;
 
       beforeAll(async () => {
         await db.delete(schema.synchronizations);
         await journal(async () => {
-          pendantLaLecture = (await rows())[0]?.resultat;
-          return bilan;
+          duringReading = (await rows())[0]?.result;
+          return report;
         }, db);
       });
 
-      test("Then elle est visible comme en cours pendant la lecture", () => {
-        expect(pendantLaLecture).toBe("en_cours");
+      test("Then it is visible as running during the reading", () => {
+        expect(duringReading).toBe("en_cours");
       });
 
-      test("Then elle est ensuite enregistrée comme réussie, avec son heure de fin", async () => {
+      test("Then it is then recorded as succeeded, with its end time", async () => {
         const [row] = await rows();
 
-        expect(row?.resultat).toBe("succes");
+        expect(row?.result).toBe("succes");
         expect(row?.finishedOn).not.toBeNull();
       });
 
-      test("Then elle compte trois marchés lus et deux modifiés", async () => {
+      test("Then it counts three contracts read and two modified", async () => {
         const [row] = await rows();
 
         expect([row?.contractsRead, row?.contractsModified]).toEqual([3, 2]);
@@ -52,30 +52,30 @@ describe.skipIf(!url)("journal des synchronisations avec CIRIL", () => {
     });
   });
 
-  describe("Given une lecture de CIRIL qui échoue faute d'accès", () => {
-    describe("When la synchronisation s'arrête", () => {
-      const refus = new Error("Aucun point d'accès Finances pour cet utilisateur CIRIL");
-      let remontee: unknown;
+  describe("Given a CIRIL reading that fails for lack of access", () => {
+    describe("When the synchronization stops", () => {
+      const refusal = new Error("Aucun point d'accès Finances pour cet utilisateur CIRIL");
+      let raised: unknown;
 
       beforeAll(async () => {
         await db.delete(schema.synchronizations);
-        remontee = await journal(async () => {
-          throw refus;
+        raised = await journal(async () => {
+          throw refusal;
         }, db).catch((e) => e);
       });
 
-      test("Then c'est cette même erreur qui remonte à l'appelant", () => {
-        expect(remontee).toBe(refus);
+      test("Then that same error is raised to the caller", () => {
+        expect(raised).toBe(refusal);
       });
 
-      test("Then l'échec est enregistré comme tel, avec son heure de fin", async () => {
+      test("Then the failure is recorded as such, with its end time", async () => {
         const [row] = await rows();
 
-        expect(row?.resultat).toBe("echec");
+        expect(row?.result).toBe("echec");
         expect(row?.finishedOn).not.toBeNull();
       });
 
-      test("Then son motif est enregistré pour qu'une panne se voie", async () => {
+      test("Then its reason is recorded so that an outage is visible", async () => {
         const [row] = await rows();
 
         expect(row?.error).toBe("Aucun point d'accès Finances pour cet utilisateur CIRIL");
@@ -83,8 +83,8 @@ describe.skipIf(!url)("journal des synchronisations avec CIRIL", () => {
     });
   });
 
-  describe("Given une panne signalée par autre chose qu'une erreur", () => {
-    describe("When la synchronisation s'arrête", () => {
+  describe("Given an outage reported by something other than an error", () => {
+    describe("When the synchronization stops", () => {
       beforeAll(async () => {
         await db.delete(schema.synchronizations);
         await journal(async () => {
@@ -92,7 +92,7 @@ describe.skipIf(!url)("journal des synchronisations avec CIRIL", () => {
         }, db).catch(() => undefined);
       });
 
-      test("Then le texte de la panne est enregistré comme motif", async () => {
+      test("Then the outage text is recorded as the reason", async () => {
         const [row] = await rows();
 
         expect(row?.error).toBe("connexion interrompue");
@@ -100,8 +100,8 @@ describe.skipIf(!url)("journal des synchronisations avec CIRIL", () => {
     });
   });
 
-  describe("Given une réponse d'erreur de CIRIL qui répète le mot de passe du compte", () => {
-    describe("When la synchronisation s'arrête", () => {
+  describe("Given a CIRIL error response that repeats the account password", () => {
+    describe("When the synchronization stops", () => {
       beforeAll(async () => {
         await db.delete(schema.synchronizations);
         await journal(async () => {
@@ -111,7 +111,7 @@ describe.skipIf(!url)("journal des synchronisations avec CIRIL", () => {
         }, db).catch(() => undefined);
       });
 
-      test("Then seul le statut de la réponse est enregistré, sans le corps", async () => {
+      test("Then only the response status is recorded, without the body", async () => {
         const [row] = await rows();
 
         expect(row?.error).toBe("CIRIL getAccessList 401");
@@ -119,20 +119,20 @@ describe.skipIf(!url)("journal des synchronisations avec CIRIL", () => {
     });
   });
 
-  describe("Given une synchronisation réussie suivie d'une synchronisation en panne", () => {
-    describe("When on relit le journal", () => {
+  describe("Given a successful synchronization followed by a failed one", () => {
+    describe("When the log is read again", () => {
       beforeAll(async () => {
         await db.delete(schema.synchronizations);
-        await journal(async () => bilan, db);
+        await journal(async () => report, db);
         await journal(async () => {
           throw new Error("CIRIL injoignable");
         }, db).catch(() => undefined);
       });
 
-      test("Then les deux passages sont conservés dans l'ordre", async () => {
-        const resultats = (await rows()).map((l) => l.resultat);
+      test("Then both runs are kept in order", async () => {
+        const results = (await rows()).map((row) => row.result);
 
-        expect(resultats).toEqual(["succes", "echec"]);
+        expect(results).toEqual(["succes", "echec"]);
       });
     });
   });

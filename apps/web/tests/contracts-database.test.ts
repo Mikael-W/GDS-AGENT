@@ -6,7 +6,7 @@ import { listContracts } from "@/server/utils/contracts";
 
 const url = process.env.TEST_DATABASE_URL;
 
-const EMPREINTE = "0".repeat(64);
+const FINGERPRINT = "0".repeat(64);
 
 describe.skipIf(!url)("liste des marchés lue dans la base de l'agent", () => {
   const db = createDatabase(url ?? "", 1);
@@ -16,7 +16,7 @@ describe.skipIf(!url)("liste des marchés lue dans la base de l'agent", () => {
   });
   afterAll(() => db.$client.end());
 
-  describe("Given un marché de trois lots et un marché sans lot recopiés de CIRIL", () => {
+  describe("Given a three-lot contract and a lotless contract copied from CIRIL", () => {
     beforeAll(async () => {
       await db.delete(schema.contracts);
       const [genieCivil] = await db
@@ -26,42 +26,42 @@ describe.skipIf(!url)("liste des marchés lue dans la base de l'agent", () => {
           subject: "Travaux de génie civil, station de relevage",
           service: "Travaux",
           initialAmount: "636900.00",
-          fingerprint: EMPREINTE,
+          fingerprint: FINGERPRINT,
         })
         .returning();
       await db.insert(schema.contracts).values({
         reference: "AO 24034",
         subject: "Travaux sur le réseau d'eau potable",
         service: "Pôle eau",
-        fingerprint: EMPREINTE,
+        fingerprint: FINGERPRINT,
       });
       await db.insert(schema.lots).values(
         ["01", "02", "03"].map((numero) => ({
           contractId: genieCivil?.id ?? 0,
           reference: `MA 24036-${numero}`,
           numero,
-          fingerprint: EMPREINTE,
+          fingerprint: FINGERPRINT,
         })),
       );
     });
 
-    describe("When on liste les marchés", () => {
-      test("Then ils sont triés par numéro de marché", async () => {
-        const liste = await listContracts(db);
+    describe("When contracts are listed", () => {
+      test("Then they are sorted by contract number", async () => {
+        const list = await listContracts(db);
 
-        expect(liste.map((m) => m.reference)).toEqual(["AO 24034", "MA 24036"]);
+        expect(list.map((m) => m.reference)).toEqual(["AO 24034", "MA 24036"]);
       });
 
-      test("Then chaque marché porte le nombre de ses lots", async () => {
-        const liste = await listContracts(db);
+      test("Then each contract carries its number of lots", async () => {
+        const list = await listContracts(db);
 
-        expect(liste.map((m) => m.lots)).toEqual([0, 3]);
+        expect(list.map((m) => m.lots)).toEqual([0, 3]);
       });
 
-      test("Then le montant notifié initial est restitué tel que CIRIL le donne", async () => {
-        const liste = await listContracts(db);
+      test("Then the initial notified amount is returned as CIRIL gives it", async () => {
+        const list = await listContracts(db);
 
-        expect(liste.find((m) => m.reference === "MA 24036")?.initialAmount).toBe("636900.00");
+        expect(list.find((m) => m.reference === "MA 24036")?.initialAmount).toBe("636900.00");
       });
     });
   });

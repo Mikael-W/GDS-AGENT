@@ -119,21 +119,21 @@ export type TreatmentInput = {
 };
 
 export async function treatAlert(
-  saisie: TreatmentInput,
+  input: TreatmentInput,
   today: string,
   db = getDb(),
 ): Promise<"traitee" | "deja_traitee" | "inconnue"> {
-  const found = await findTracked(saisie.reference, saisie.family, today, db);
+  const found = await findTracked(input.reference, input.family, today, db);
   if (!found) return "inconnue";
 
   const inserted = await db
     .insert(alertTreatments)
     .values({
       contractId: found.contract.id,
-      family: saisie.family,
+      family: input.family,
       deadlineOn: found.alert.deadlineOn,
-      comment: saisie.comment,
-      treatedBy: saisie.treatedBy,
+      comment: input.comment,
+      treatedBy: input.treatedBy,
     })
     .onConflictDoNothing()
     .returning({ id: alertTreatments.id });

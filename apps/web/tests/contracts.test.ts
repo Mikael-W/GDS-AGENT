@@ -31,36 +31,36 @@ function contract(fields: Partial<ContractListItem> = {}): ContractListItem {
   };
 }
 
-describe("montant notifié d'un marché", () => {
-  describe("Given un marché de 2 287 900 euros modifié par un avenant de 12 500,50 euros", () => {
-    describe("When on calcule son montant notifié", () => {
-      test("Then l'avenant s'ajoute au montant initial, au centime près", () => {
+describe("notified amount of a contract", () => {
+  describe("Given a 2,287,900 euro contract amended by a 12,500.50 euro amendment", () => {
+    describe("When its notified amount is computed", () => {
+      test("Then the amendment is added to the initial amount, to the cent", () => {
         const m = contract({ initialAmount: "2287900.00", amendmentsAmount: "12500.50" });
 
-        const centimes = notifiedAmount(m);
+        const cents = notifiedAmount(m);
 
-        expect(centimes).toBe(230_040_050);
+        expect(cents).toBe(230_040_050);
       });
     });
   });
 
-  describe("Given un marché sans montant renseigné dans CIRIL", () => {
-    describe("When on calcule son montant notifié", () => {
-      test("Then le montant est nul plutôt qu'inconnu", () => {
+  describe("Given a contract without amount filled in CIRIL", () => {
+    describe("When its notified amount is computed", () => {
+      test("Then the amount is zero rather than unknown", () => {
         const m = contract({ initialAmount: null, amendmentsAmount: null });
 
-        const centimes = notifiedAmount(m);
+        const cents = notifiedAmount(m);
 
-        expect(centimes).toBe(0);
+        expect(cents).toBe(0);
       });
     });
   });
 });
 
-describe("marché en cours", () => {
-  describe("Given un marché qui se termine aujourd'hui", () => {
-    describe("When on regarde s'il est en cours", () => {
-      test("Then il l'est encore le jour de sa fin", () => {
+describe("ongoing contract", () => {
+  describe("Given a contract that ends today", () => {
+    describe("When checking whether it is ongoing", () => {
+      test("Then it still is on its end day", () => {
         const m = contract({ endsOn: today });
 
         const busy = isOngoing(m, today);
@@ -70,9 +70,9 @@ describe("marché en cours", () => {
     });
   });
 
-  describe("Given un marché terminé hier", () => {
-    describe("When on regarde s'il est en cours", () => {
-      test("Then il ne l'est plus", () => {
+  describe("Given a contract that ended yesterday", () => {
+    describe("When checking whether it is ongoing", () => {
+      test("Then it no longer is", () => {
         const m = contract({ endsOn: "2026-11-04" });
 
         const busy = isOngoing(m, today);
@@ -82,9 +82,9 @@ describe("marché en cours", () => {
     });
   });
 
-  describe("Given un marché sans date de fin", () => {
-    describe("When on regarde s'il est en cours", () => {
-      test("Then il est tenu pour en cours, faute de fin connue", () => {
+  describe("Given a contract without end date", () => {
+    describe("When checking whether it is ongoing", () => {
+      test("Then it is deemed ongoing, for lack of a known end", () => {
         const m = contract({ endsOn: null });
 
         const busy = isOngoing(m, today);
@@ -94,9 +94,9 @@ describe("marché en cours", () => {
     });
   });
 
-  describe("Given un marché désactivé dans CIRIL, dont la date de fin n'est pas atteinte", () => {
-    describe("When on regarde s'il est en cours", () => {
-      test("Then il n'est pas en cours", () => {
+  describe("Given a contract deactivated in CIRIL, whose end date is not reached", () => {
+    describe("When checking whether it is ongoing", () => {
+      test("Then it is not ongoing", () => {
         const m = contract({ active: false });
 
         const busy = isOngoing(m, today);
@@ -106,9 +106,9 @@ describe("marché en cours", () => {
     });
   });
 
-  describe("Given un marché soldé, dont la date de fin n'est pas atteinte", () => {
-    describe("When on regarde s'il est en cours", () => {
-      test("Then il n'est pas en cours", () => {
+  describe("Given a settled contract, whose end date is not reached", () => {
+    describe("When checking whether it is ongoing", () => {
+      test("Then it is not ongoing", () => {
         const m = contract({ settled: true });
 
         const busy = isOngoing(m, today);
@@ -119,8 +119,8 @@ describe("marché en cours", () => {
   });
 });
 
-describe("synthèse du portefeuille", () => {
-  describe("Given deux marchés en cours et un marché terminé", () => {
+describe("portfolio summary", () => {
+  describe("Given two ongoing contracts and one ended contract", () => {
     const portfolio = [
       contract({ reference: "AO 25075", lots: 2, initialAmount: "559200.00" }),
       contract({ reference: "AO 24034", lots: 1, initialAmount: "2287900.00" }),
@@ -132,39 +132,39 @@ describe("synthèse du portefeuille", () => {
       }),
     ];
 
-    describe("When on calcule la synthèse", () => {
-      test("Then seuls les marchés en cours sont comptés comme actifs", () => {
-        const resultat = summarize(portfolio, today);
+    describe("When the summary is computed", () => {
+      test("Then only ongoing contracts are counted as active", () => {
+        const result = summarize(portfolio, today);
 
-        expect(resultat.active).toBe(2);
+        expect(result.active).toBe(2);
       });
 
-      test("Then les lots suivis sont ceux des marchés en cours", () => {
-        const resultat = summarize(portfolio, today);
+      test("Then the tracked lots are those of ongoing contracts", () => {
+        const result = summarize(portfolio, today);
 
-        expect(resultat.lots).toBe(3);
+        expect(result.lots).toBe(3);
       });
 
-      test("Then le montant notifié est celui des marchés en cours", () => {
-        const resultat = summarize(portfolio, today);
+      test("Then the notified amount is that of ongoing contracts", () => {
+        const result = summarize(portfolio, today);
 
-        expect(resultat.notifiedAmount).toBe(284_710_000);
+        expect(result.notifiedAmount).toBe(284_710_000);
       });
     });
   });
 
-  describe("Given un portefeuille vide", () => {
-    describe("When on calcule la synthèse", () => {
-      test("Then tous les compteurs valent zéro", () => {
-        const resultat = summarize([], today);
+  describe("Given an empty portfolio", () => {
+    describe("When the summary is computed", () => {
+      test("Then all counters are zero", () => {
+        const result = summarize([], today);
 
-        expect(resultat).toEqual({ active: 0, lots: 0, notifiedAmount: 0 });
+        expect(result).toEqual({ active: 0, lots: 0, notifiedAmount: 0 });
       });
     });
   });
 });
 
-describe("filtres de la liste des marchés", () => {
+describe("contract list filters", () => {
   const portfolio = [
     contract({
       reference: "AO 25075",
@@ -186,71 +186,71 @@ describe("filtres de la liste des marchés", () => {
   ];
   const noCriteria = { search: "", service: "", state: "tous" } as const;
 
-  describe("Given une recherche sur un mot de l'objet écrit sans accent", () => {
-    describe("When on filtre", () => {
-      test("Then le marché dont l'objet porte ce mot accentué est trouvé", () => {
+  describe("Given a search on a subject word written without accent", () => {
+    describe("When filtering", () => {
+      test("Then the contract whose subject carries that word with accent is found", () => {
         const criteria = { ...noCriteria, search: "reseau" };
 
-        const resultat = filter(portfolio, criteria, today);
+        const result = filter(portfolio, criteria, today);
 
-        expect(resultat.map((m) => m.reference)).toEqual(["AO 24034"]);
+        expect(result.map((m) => m.reference)).toEqual(["AO 24034"]);
       });
     });
   });
 
-  describe("Given une recherche sur un numéro de marché", () => {
-    describe("When on filtre", () => {
-      test("Then le marché de ce numéro est trouvé, sans tenir compte de la casse", () => {
+  describe("Given a search on a contract number", () => {
+    describe("When filtering", () => {
+      test("Then the contract with that number is found, regardless of case", () => {
         const criteria = { ...noCriteria, search: "ma 24036" };
 
-        const resultat = filter(portfolio, criteria, today);
+        const result = filter(portfolio, criteria, today);
 
-        expect(resultat.map((m) => m.reference)).toEqual(["MA 24036"]);
+        expect(result.map((m) => m.reference)).toEqual(["MA 24036"]);
       });
     });
   });
 
-  describe("Given le choix d'un service", () => {
-    describe("When on filtre", () => {
-      test("Then seuls les marchés de ce service restent", () => {
+  describe("Given the choice of a department", () => {
+    describe("When filtering", () => {
+      test("Then only the contracts of that department remain", () => {
         const criteria = { ...noCriteria, service: "Pôle eau" };
 
-        const resultat = filter(portfolio, criteria, today);
+        const result = filter(portfolio, criteria, today);
 
-        expect(resultat.map((m) => m.reference)).toEqual(["AO 24034"]);
+        expect(result.map((m) => m.reference)).toEqual(["AO 24034"]);
       });
     });
   });
 
-  describe("Given l'état En cours", () => {
-    describe("When on filtre", () => {
-      test("Then le marché terminé disparaît de la liste", () => {
+  describe("Given the Ongoing status", () => {
+    describe("When filtering", () => {
+      test("Then the ended contract disappears from the list", () => {
         const criteria = { ...noCriteria, state: "en_cours" } as const;
 
-        const resultat = filter(portfolio, criteria, today);
+        const result = filter(portfolio, criteria, today);
 
-        expect(resultat.map((m) => m.reference)).toEqual(["AO 25075", "AO 24034"]);
+        expect(result.map((m) => m.reference)).toEqual(["AO 25075", "AO 24034"]);
       });
     });
   });
 
-  describe("Given l'état Terminés", () => {
-    describe("When on filtre", () => {
-      test("Then seul le marché terminé reste", () => {
+  describe("Given the Ended status", () => {
+    describe("When filtering", () => {
+      test("Then only the ended contract remains", () => {
         const criteria = { ...noCriteria, state: "termines" } as const;
 
-        const resultat = filter(portfolio, criteria, today);
+        const result = filter(portfolio, criteria, today);
 
-        expect(resultat.map((m) => m.reference)).toEqual(["MA 24036"]);
+        expect(result.map((m) => m.reference)).toEqual(["MA 24036"]);
       });
     });
   });
 });
 
-describe("services du portefeuille", () => {
-  describe("Given des marchés de plusieurs services, dont un sans service", () => {
-    describe("When on liste les services", () => {
-      test("Then chaque service apparaît une fois, trié, sans valeur vide", () => {
+describe("portfolio departments", () => {
+  describe("Given contracts from several departments, one of them without department", () => {
+    describe("When departments are listed", () => {
+      test("Then each department appears once, sorted, without empty value", () => {
         const portfolio = [
           contract({ service: "Travaux" }),
           contract({ service: "Espaces verts" }),
@@ -258,18 +258,18 @@ describe("services du portefeuille", () => {
           contract({ service: null }),
         ];
 
-        const liste = departments(portfolio);
+        const list = departments(portfolio);
 
-        expect(liste).toEqual(["Espaces verts", "Travaux"]);
+        expect(list).toEqual(["Espaces verts", "Travaux"]);
       });
     });
   });
 });
 
-describe("présentation des montants et des périodes", () => {
-  describe("Given un montant de 559 200 euros", () => {
-    describe("When on le formate", () => {
-      test("Then il porte l'euro après une espace insécable", () => {
+describe("presentation of amounts and periods", () => {
+  describe("Given an amount of 559,200 euros", () => {
+    describe("When it is formatted", () => {
+      test("Then it carries the euro after a non-breaking space", () => {
         const text = formatAmount(55_920_000);
 
         expect(text).toBe("559 200,00 €");
@@ -277,9 +277,9 @@ describe("présentation des montants et des périodes", () => {
     });
   });
 
-  describe("Given un portefeuille de 38,4 millions d'euros", () => {
-    describe("When on le formate en abrégé", () => {
-      test("Then il s'écrit en millions avec une décimale", () => {
+  describe("Given a portfolio of 38.4 million euros", () => {
+    describe("When it is formatted in short form", () => {
+      test("Then it is written in millions with one decimal", () => {
         const text = formatCompactAmount(3_840_000_000);
 
         expect(text).toBe("38,4 M€");
@@ -287,9 +287,9 @@ describe("présentation des montants et des périodes", () => {
     });
   });
 
-  describe("Given un montant sous le million", () => {
-    describe("When on le formate en abrégé", () => {
-      test("Then il garde son écriture complète", () => {
+  describe("Given an amount under one million", () => {
+    describe("When it is formatted in short form", () => {
+      test("Then it keeps its full notation", () => {
         const text = formatCompactAmount(31_845_000);
 
         expect(text).toBe("318 450,00 €");
@@ -297,9 +297,9 @@ describe("présentation des montants et des périodes", () => {
     });
   });
 
-  describe("Given un marché du 1er décembre 2024 au 1er décembre 2027", () => {
-    describe("When on formate sa période", () => {
-      test("Then elle s'écrit en mois et année", () => {
+  describe("Given a contract from 1 December 2024 to 1 December 2027", () => {
+    describe("When its period is formatted", () => {
+      test("Then it is written in month and year", () => {
         const text = formatPeriod("2024-12-01", "2027-12-01");
 
         expect(text).toBe("12/2024 au 12/2027");
@@ -307,9 +307,9 @@ describe("présentation des montants et des périodes", () => {
     });
   });
 
-  describe("Given un marché sans aucune date", () => {
-    describe("When on formate sa période", () => {
-      test("Then elle est dite non renseignée", () => {
+  describe("Given a contract without any date", () => {
+    describe("When its period is formatted", () => {
+      test("Then it is reported as not filled in", () => {
         const text = formatPeriod(null, null);
 
         expect(text).toBe("Non renseignée");
@@ -318,10 +318,10 @@ describe("présentation des montants et des périodes", () => {
   });
 });
 
-describe("montant initial d'un marché dans le détail d'une alerte", () => {
-  describe("Given un montant initial de 186 400 euros", () => {
-    describe("When on l'affiche", () => {
-      test("Then il est écrit en euros", () => {
+describe("initial contract amount in an alert detail", () => {
+  describe("Given an initial amount of 186,400 euros", () => {
+    describe("When it is displayed", () => {
+      test("Then it is written in euros", () => {
         const text = formatEuros("186400.00");
 
         expect(text).toBe(formatAmount(18_640_000));
@@ -329,9 +329,9 @@ describe("montant initial d'un marché dans le détail d'une alerte", () => {
     });
   });
 
-  describe("Given un marché sans montant initial dans CIRIL", () => {
-    describe("When on l'affiche", () => {
-      test("Then on lit qu'il n'est pas renseigné", () => {
+  describe("Given a contract without initial amount in CIRIL", () => {
+    describe("When it is displayed", () => {
+      test("Then it reads that it is not filled in", () => {
         const text = formatEuros(null);
 
         expect(text).toBe("Non renseigné");

@@ -54,10 +54,10 @@ const deadlines = [
   }),
 ];
 
-describe("échéances regroupées par mois", () => {
-  describe("Given cinq échéances réparties sur trois mois", () => {
-    describe("When on les regroupe", () => {
-      test("Then chaque mois porte son libellé en français, dans l'ordre du calendrier", () => {
+describe("deadlines grouped by month", () => {
+  describe("Given five deadlines spread over three months", () => {
+    describe("When they are grouped", () => {
+      test("Then each month carries its French label, in calendar order", () => {
         const groups = groupByMonth(deadlines);
 
         expect(groups.map((g) => g.label)).toEqual([
@@ -67,17 +67,17 @@ describe("échéances regroupées par mois", () => {
         ]);
       });
 
-      test("Then novembre rassemble ses trois échéances, de la plus proche à la plus lointaine", () => {
-        const [novembre] = groupByMonth(deadlines);
+      test("Then November gathers its three deadlines, from the nearest to the farthest", () => {
+        const [november] = groupByMonth(deadlines);
 
-        expect(novembre?.alerts.map((a) => a.reference)).toEqual([
+        expect(november?.alerts.map((a) => a.reference)).toEqual([
           "AO 24034",
           "AO 25075",
           "MA 24036",
         ]);
       });
 
-      test("Then seul le mois qui contient une échéance dépassée est signalé en retard", () => {
+      test("Then only the month containing an overdue deadline is flagged late", () => {
         const groups = groupByMonth(deadlines);
 
         expect(groups.map((g) => g.containsOverdue)).toEqual([true, false, false]);
@@ -85,30 +85,30 @@ describe("échéances regroupées par mois", () => {
     });
   });
 
-  describe("Given des échéances données dans le désordre", () => {
-    describe("When on les regroupe", () => {
-      test("Then l'ordre des mois suit le calendrier", () => {
-        const janvier = alert({
+  describe("Given deadlines given in disorder", () => {
+    describe("When they are grouped", () => {
+      test("Then the month order follows the calendar", () => {
+        const january = alert({
           reference: "AO 26028",
           deadlineOn: "2027-01-05",
           daysRemaining: 61,
         });
-        const novembre = alert({
+        const november = alert({
           reference: "AO 24034",
           deadlineOn: "2026-11-04",
           daysRemaining: -1,
         });
 
-        const groups = groupByMonth([janvier, novembre]);
+        const groups = groupByMonth([january, november]);
 
         expect(groups.map((g) => g.month)).toEqual(["2026-11", "2027-01"]);
       });
     });
   });
 
-  describe("Given aucune échéance", () => {
-    describe("When on les regroupe", () => {
-      test("Then il n'y a aucun mois à afficher", () => {
+  describe("Given no deadline", () => {
+    describe("When they are grouped", () => {
+      test("Then there is no month to display", () => {
         const groups = groupByMonth([]);
 
         expect(groups).toEqual([]);
@@ -117,10 +117,10 @@ describe("échéances regroupées par mois", () => {
   });
 });
 
-describe("synthèse de l'échéancier", () => {
-  describe("Given une échéance dépassée, deux dans le mois et deux plus tard", () => {
-    describe("When on compte", () => {
-      test("Then une est dépassée et deux tombent sous 30 jours", () => {
+describe("schedule summary", () => {
+  describe("Given one overdue deadline, two within the month and two later", () => {
+    describe("When counting", () => {
+      test("Then one is overdue and two fall within 30 days", () => {
         const summary = scheduleSummary(deadlines);
 
         expect(summary).toEqual({ overdue: 1, withinThirtyDays: 2 });
@@ -128,9 +128,9 @@ describe("synthèse de l'échéancier", () => {
     });
   });
 
-  describe("Given une échéance qui tombe aujourd'hui et une à 30 jours exactement", () => {
-    describe("When on compte", () => {
-      test("Then les deux comptent comme sous 30 jours", () => {
+  describe("Given a deadline falling today and one exactly 30 days away", () => {
+    describe("When counting", () => {
+      test("Then both count as within 30 days", () => {
         const summary = scheduleSummary([
           alert({ daysRemaining: 0 }),
           alert({ daysRemaining: 30 }),
@@ -142,30 +142,30 @@ describe("synthèse de l'échéancier", () => {
   });
 });
 
-describe("filtre par famille d'alerte", () => {
-  describe("Given cinq échéances dont deux reconductions", () => {
-    describe("When on choisit la famille reconduction", () => {
-      test("Then seules les deux reconductions restent", () => {
-        const resultat = filterByFamily(deadlines, { family: "reconduction" });
+describe("alert family filter", () => {
+  describe("Given five deadlines, two of them reconductions", () => {
+    describe("When the reconduction family is chosen", () => {
+      test("Then only the two reconductions remain", () => {
+        const result = filterByFamily(deadlines, { family: "reconduction" });
 
-        expect(resultat.map((a) => a.reference)).toEqual(["AO 25075", "AO 26028"]);
+        expect(result.map((a) => a.reference)).toEqual(["AO 25075", "AO 26028"]);
       });
     });
 
-    describe("When on garde toutes les familles", () => {
-      test("Then toutes les échéances restent", () => {
-        const resultat = filterByFamily(deadlines, { family: "" });
+    describe("When all families are kept", () => {
+      test("Then all deadlines remain", () => {
+        const result = filterByFamily(deadlines, { family: "" });
 
-        expect(resultat).toHaveLength(5);
+        expect(result).toHaveLength(5);
       });
     });
   });
 });
 
-describe("jour de l'échéance", () => {
-  describe("Given une échéance au 9 novembre 2026", () => {
-    describe("When on lit son jour", () => {
-      test("Then on lit 09", () => {
+describe("deadline day", () => {
+  describe("Given a deadline on 9 November 2026", () => {
+    describe("When its day is read", () => {
+      test("Then it reads 09", () => {
         const day = dayOfMonth(alert({ deadlineOn: "2026-11-09" }));
 
         expect(day).toBe("09");

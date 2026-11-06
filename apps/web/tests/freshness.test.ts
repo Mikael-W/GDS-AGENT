@@ -2,81 +2,81 @@ import { describe, expect, test } from "vitest";
 
 import { FRESHNESS_THRESHOLD_MS, freshness } from "@/app/domain/freshness";
 
-describe("fraicheur", () => {
+describe("freshness", () => {
   const now = new Date("2026-11-05T10:00:00Z");
 
-  describe("Given aucune lecture de CIRIL", () => {
-    describe("When on évalue la fraîcheur", () => {
-      test("Then l'état demande de l'attention", () => {
-        const resultat = freshness(null, now);
+  describe("Given no CIRIL reading", () => {
+    describe("When freshness is evaluated", () => {
+      test("Then the status requires attention", () => {
+        const result = freshness(null, now);
 
-        expect(resultat.state).toBe("attention");
+        expect(result.state).toBe("attention");
       });
 
-      test("Then le titre dit que CIRIL n'a pas encore été lu", () => {
-        const resultat = freshness(null, now);
+      test("Then the title says CIRIL has not been read yet", () => {
+        const result = freshness(null, now);
 
-        expect(resultat.title).toBe("Aucune lecture de CIRIL");
-      });
-    });
-  });
-
-  describe("Given une lecture récente", () => {
-    const lecture = new Date("2026-11-05T05:00:00Z");
-
-    describe("When on évalue la fraîcheur", () => {
-      test("Then l'état est conforme", () => {
-        const resultat = freshness(lecture, now);
-
-        expect(resultat.state).toBe("conforme");
-      });
-
-      test("Then le titre annonce des données à jour", () => {
-        const resultat = freshness(lecture, now);
-
-        expect(resultat.title).toBe("Données à jour");
-      });
-
-      test("Then le détail donne la date et l'heure de Paris", () => {
-        const resultat = freshness(lecture, now);
-
-        expect(resultat.details).toBe("Lues dans CIRIL le 05/11/2026 à 06:00");
+        expect(result.title).toBe("Aucune lecture de CIRIL");
       });
     });
   });
 
-  describe("Given une lecture exactement au seuil", () => {
-    const lecture = new Date(now.getTime() - FRESHNESS_THRESHOLD_MS);
+  describe("Given a recent reading", () => {
+    const reading = new Date("2026-11-05T05:00:00Z");
 
-    describe("When on évalue la fraîcheur", () => {
-      test("Then les données sont encore à jour", () => {
-        const resultat = freshness(lecture, now);
+    describe("When freshness is evaluated", () => {
+      test("Then the status is compliant", () => {
+        const result = freshness(reading, now);
 
-        expect(resultat.state).toBe("conforme");
+        expect(result.state).toBe("conforme");
+      });
+
+      test("Then the title announces up-to-date data", () => {
+        const result = freshness(reading, now);
+
+        expect(result.title).toBe("Données à jour");
+      });
+
+      test("Then the detail gives the Paris date and time", () => {
+        const result = freshness(reading, now);
+
+        expect(result.details).toBe("Lues dans CIRIL le 05/11/2026 à 06:00");
       });
     });
   });
 
-  describe("Given une lecture plus ancienne que le seuil", () => {
-    const lecture = new Date(now.getTime() - FRESHNESS_THRESHOLD_MS - 1);
+  describe("Given a reading exactly at the threshold", () => {
+    const reading = new Date(now.getTime() - FRESHNESS_THRESHOLD_MS);
 
-    describe("When on évalue la fraîcheur", () => {
-      test("Then l'état est en retard", () => {
-        const resultat = freshness(lecture, now);
+    describe("When freshness is evaluated", () => {
+      test("Then the data is still up to date", () => {
+        const result = freshness(reading, now);
 
-        expect(resultat.state).toBe("retard");
+        expect(result.state).toBe("conforme");
+      });
+    });
+  });
+
+  describe("Given a reading older than the threshold", () => {
+    const reading = new Date(now.getTime() - FRESHNESS_THRESHOLD_MS - 1);
+
+    describe("When freshness is evaluated", () => {
+      test("Then the status is late", () => {
+        const result = freshness(reading, now);
+
+        expect(result.state).toBe("retard");
       });
 
-      test("Then le titre annonce des données anciennes", () => {
-        const resultat = freshness(lecture, now);
+      test("Then the title announces old data", () => {
+        const result = freshness(reading, now);
 
-        expect(resultat.title).toBe("Données anciennes");
+        expect(result.title).toBe("Données anciennes");
       });
 
-      test("Then le détail annonce la dernière lecture", () => {
-        const resultat = freshness(lecture, now);
+      test("Then the detail announces the last reading", () => {
+        const result = freshness(reading, now);
 
-        expect(resultat.details).toBe("Dernière lecture le 04/11/2026 à 08:59");
+        expect(result.details).toBe("Dernière lecture le 04/11/2026 à 08:59");
       });
     });
   });

@@ -3,6 +3,6 @@ export default defineEventHandler(async (event) => {
     refuse(404, "Synchro de développement indisponible");
   }
   await requireUserSession(event);
-  const resultat = await synchronizeFromCiril();
-  return resultat;
+  const result = await synchronizeFromCiril();
+  return result;
 });

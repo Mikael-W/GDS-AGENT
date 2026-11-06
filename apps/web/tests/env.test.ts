@@ -8,20 +8,20 @@ const getDb = {
   AUTH_KEYCLOAK_SECRET: "secret",
 };
 
-describe("réglages", () => {
-  it("acceptent les valeurs de développement hors production", () => {
+describe("settings", () => {
+  it("accept development values outside production", () => {
     const e = readEnv({ ...getDb, AUTH_SECRET: DEV_SECRET });
     expect(e.ENVIRONNEMENT).toBe("dev");
     expect(e.GIT_SHA).toBe("dev");
   });
 
-  it("refusent en production les valeurs de développement", () => {
+  it("reject development values in production", () => {
     expect(() => readEnv({ ...getDb, ENVIRONNEMENT: "prod", AUTH_SECRET: DEV_SECRET })).toThrow(
       /AUTH_SECRET garde la valeur de développement.*SENTRY_DSN est vide.*GIT_SHA absent/,
     );
   });
 
-  it("acceptent une configuration de production complète", () => {
+  it("accept a complete production configuration", () => {
     const e = readEnv({
       ...getDb,
       ENVIRONNEMENT: "prod",
@@ -34,7 +34,7 @@ describe("réglages", () => {
     expect(e.GIT_SHA).toBe("abc1234");
   });
 
-  it("signalent une variable obligatoire absente par son nom", () => {
+  it("report a missing required variable by its name", () => {
     expect(() => readEnv({ ...getDb })).toThrow(/AUTH_SECRET/);
   });
 });

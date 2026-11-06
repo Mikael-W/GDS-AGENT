@@ -29,7 +29,7 @@ export type ContractSummary = {
 const eurosToCents = (montant: string | null): number =>
   montant === null ? 0 : Math.round(Number(montant) * 100);
 
-const sansAccent = (text: string): string =>
+const withoutAccent = (text: string): string =>
   text
     .normalize("NFD")
     .replace(/\p{Diacritic}/gu, "")
@@ -63,31 +63,31 @@ export function filter(
   criteria: ContractCriteria,
   today: string,
 ): ContractListItem[] {
-  const search = sansAccent(criteria.search.trim());
+  const search = withoutAccent(criteria.search.trim());
   return contracts.filter((m) => {
     if (criteria.service && m.service !== criteria.service) return false;
     if (criteria.state === "en_cours" && !isOngoing(m, today)) return false;
     if (criteria.state === "termines" && isOngoing(m, today)) return false;
     if (!search) return true;
     return [m.subject, m.reference, m.holder].some((field) =>
-      sansAccent(field ?? "").includes(search),
+      withoutAccent(field ?? "").includes(search),
     );
   });
 }
 
 const euro = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
 
-export function formatAmount(centimes: number): string {
-  return euro.format(centimes / 100);
+export function formatAmount(cents: number): string {
+  return euro.format(cents / 100);
 }
 
 export function formatEuros(montant: string | null): string {
   return montant === null ? "Non renseigné" : formatAmount(eurosToCents(montant));
 }
 
-export function formatCompactAmount(centimes: number): string {
-  const euros = centimes / 100;
-  if (euros < 1_000_000) return formatAmount(centimes);
+export function formatCompactAmount(cents: number): string {
+  const euros = cents / 100;
+  if (euros < 1_000_000) return formatAmount(cents);
   return `${(euros / 1_000_000).toFixed(1).replace(".", ",")} M€`;
 }
 

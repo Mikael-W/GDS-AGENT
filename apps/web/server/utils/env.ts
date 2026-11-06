@@ -37,14 +37,14 @@ const schema = z
 export type Env = z.infer<typeof schema>;
 
 export function readEnv(source: Record<string, string | undefined>): Env {
-  const resultat = schema.safeParse(source);
-  if (!resultat.success) {
-    const details = resultat.error.issues
+  const result = schema.safeParse(source);
+  if (!result.success) {
+    const details = result.error.issues
       .map((i) => (i.path.length ? `${i.path.join(".")} : ${i.message}` : i.message))
       .join(" ; ");
     throw new Error(`Réglages refusés : ${details}`);
   }
-  return resultat.data;
+  return result.data;
 }
 
 let memo: Env | undefined;

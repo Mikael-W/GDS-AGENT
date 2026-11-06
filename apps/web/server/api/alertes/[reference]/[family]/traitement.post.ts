@@ -5,13 +5,13 @@ export default defineEventHandler(async (event) => {
   const params = AlertParameters.safeParse(getRouterParams(event, { decode: true }));
   if (!params.success) refuse(404, "Alerte inconnue");
 
-  const saisie = TreatmentBody.safeParse(await readBody(event));
-  if (!saisie.success) {
-    refuse(400, saisie.error.issues[0]?.message ?? "Saisie invalide");
+  const input = TreatmentBody.safeParse(await readBody(event));
+  if (!input.success) {
+    refuse(400, input.error.issues[0]?.message ?? "Saisie invalide");
   }
 
   const issue = await treatAlert(
-    { ...params.data, comment: saisie.data.comment, treatedBy: user.id },
+    { ...params.data, comment: input.data.comment, treatedBy: user.id },
     parisToday(),
   );
   if (issue === "inconnue") {

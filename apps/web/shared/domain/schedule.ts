@@ -49,11 +49,11 @@ export function groupByMonth(alerts: AlertListItem[]): MonthGroup[] {
     const month = alert.deadlineOn.slice(0, 7);
     groups.set(month, [...(groups.get(month) ?? []), alert]);
   }
-  return [...groups].map(([month, liste]) => ({
+  return [...groups].map(([month, list]) => ({
     month,
     label: monthLabel(month),
-    alerts: liste,
-    containsOverdue: liste.some(isOverdue),
+    alerts: list,
+    containsOverdue: list.some(isOverdue),
   }));
 }
 

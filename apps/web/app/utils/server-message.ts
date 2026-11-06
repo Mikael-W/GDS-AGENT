@@ -5,7 +5,7 @@ const ServerError = z.object({
   data: z.object({ data: z.object({ message: z.string().min(1) }) }),
 });
 
-export function serverMessage(error: unknown, parDefaut: string): string {
-  const lue = ServerError.safeParse(error);
-  return lue.success ? lue.data.data.data.message : parDefaut;
+export function serverMessage(error: unknown, fallback: string): string {
+  const parsed = ServerError.safeParse(error);
+  return parsed.success ? parsed.data.data.data.message : fallback;
 }

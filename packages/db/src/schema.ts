@@ -35,7 +35,7 @@ export const users = pgTable("utilisateurs", {
   name: varchar("nom", { length: 200 }),
   role: roles("role").notNull().default("membre"),
   creeLe: timestamp("cree_le", { withTimezone: true }).notNull().defaultNow(),
-  vuLe: timestamp("vu_le", { withTimezone: true }).notNull().defaultNow(),
+  seenAt: timestamp("vu_le", { withTimezone: true }).notNull().defaultNow(),
 });
 
 export type User = typeof users.$inferSelect;
@@ -47,7 +47,7 @@ export type User = typeof users.$inferSelect;
  */
 export const heartbeats = pgTable("battements", {
   service: varchar("service", { length: 64 }).primaryKey(),
-  vuLe: timestamp("vu_le", { withTimezone: true }).notNull().defaultNow(),
+  seenAt: timestamp("vu_le", { withTimezone: true }).notNull().defaultNow(),
 });
 
 /**
@@ -197,7 +197,7 @@ export const synchronizations = pgTable("synchronisations", {
   id: serial("id").primaryKey(),
   demarreeLe: timestamp("demarree_le", { withTimezone: true }).notNull().defaultNow(),
   finishedOn: timestamp("terminee_le", { withTimezone: true }),
-  resultat: synchronizationResults("resultat").notNull().default("en_cours"),
+  result: synchronizationResults("resultat").notNull().default("en_cours"),
   contractsRead: integer("marches_lus").notNull().default(0),
   contractsModified: integer("marches_modifies").notNull().default(0),
   error: text("erreur"),

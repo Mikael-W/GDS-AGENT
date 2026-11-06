@@ -37,7 +37,7 @@ type ContractMapping = Omit<Contract, "id" | "readAt">;
 /**
  * Projette un contrat CIRIL vers une ligne `marches`. Les champs non fournis
  * par l'export CIRIL restent `null` : CCAP/garantie/réception viennent plus
- * tard (saisie manuelle ou autres webservices).
+ * tard (input manuelle ou autres webservices).
  */
 export function project(contract: CirilContract): ContractMapping {
   const reference = contract.numeroContrat?.trim() ?? "";

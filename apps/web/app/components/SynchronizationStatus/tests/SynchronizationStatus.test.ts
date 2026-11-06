@@ -9,7 +9,7 @@ const ENDPOINT = "/api/synchronisation/derniere";
 const DAY_MS = 86_400_000;
 const NOW = new Date("2026-11-05T09:00:00Z");
 
-describe("état de fraîcheur des données CIRIL", () => {
+describe("CIRIL data freshness status", () => {
   beforeEach(() => {
     vi.useFakeTimers({ toFake: ["Date"] });
     vi.setSystemTime(NOW);
@@ -17,11 +17,11 @@ describe("état de fraîcheur des données CIRIL", () => {
   });
   afterEach(() => vi.useRealTimers());
 
-  describe("Given une synchronisation terminée il y a une heure", () => {
-    describe("When on affiche l'état", () => {
-      test("Then les données sont annoncées à jour", async () => {
-        const uneHeure = new Date(NOW.getTime() - 3_600_000).toISOString();
-        registerEndpoint(ENDPOINT, () => ({ finishedOn: uneHeure }));
+  describe("Given a synchronization finished one hour ago", () => {
+    describe("When the status is displayed", () => {
+      test("Then the data is announced as up to date", async () => {
+        const oneHour = new Date(NOW.getTime() - 3_600_000).toISOString();
+        registerEndpoint(ENDPOINT, () => ({ finishedOn: oneHour }));
 
         const state = await mountSuspended(SynchronizationStatus);
 
@@ -31,11 +31,11 @@ describe("état de fraîcheur des données CIRIL", () => {
     });
   });
 
-  describe("Given une dernière synchronisation vieille de trois jours", () => {
-    describe("When on affiche l'état", () => {
-      test("Then les données sont signalées comme anciennes", async () => {
-        const troisJours = new Date(NOW.getTime() - 3 * DAY_MS).toISOString();
-        registerEndpoint(ENDPOINT, () => ({ finishedOn: troisJours }));
+  describe("Given a last synchronization three days old", () => {
+    describe("When the status is displayed", () => {
+      test("Then the data is flagged as old", async () => {
+        const threeDays = new Date(NOW.getTime() - 3 * DAY_MS).toISOString();
+        registerEndpoint(ENDPOINT, () => ({ finishedOn: threeDays }));
 
         const state = await mountSuspended(SynchronizationStatus);
 
@@ -45,9 +45,9 @@ describe("état de fraîcheur des données CIRIL", () => {
     });
   });
 
-  describe("Given une application qui n'a encore jamais lu CIRIL", () => {
-    describe("When on affiche l'état", () => {
-      test("Then on lit qu'aucune lecture n'a eu lieu", async () => {
+  describe("Given an application that has never read CIRIL", () => {
+    describe("When the status is displayed", () => {
+      test("Then it states that no reading has taken place", async () => {
         registerEndpoint(ENDPOINT, () => ({ finishedOn: null }));
 
         const state = await mountSuspended(SynchronizationStatus);
@@ -57,9 +57,9 @@ describe("état de fraîcheur des données CIRIL", () => {
     });
   });
 
-  describe("Given un état de synchronisation impossible à lire", () => {
-    describe("When on affiche l'état", () => {
-      test("Then on lit que la fraîcheur est indisponible", async () => {
+  describe("Given a synchronization status that cannot be read", () => {
+    describe("When the status is displayed", () => {
+      test("Then it states that freshness is unavailable", async () => {
         registerEndpoint(ENDPOINT, () => {
           throw createError({ statusCode: 500 });
         });

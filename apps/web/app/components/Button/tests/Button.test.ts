@@ -3,17 +3,17 @@ import { describe, expect, test } from "vitest";
 
 import Button from "../Button.vue";
 
-describe("bouton de l'interface", () => {
-  describe("Given un bouton sans réglage particulier", () => {
-    describe("When on l'affiche avec le texte Enregistrer", () => {
-      test("Then il porte ce texte et reste un bouton simple, sans envoi de formulaire", async () => {
+describe("interface button", () => {
+  describe("Given a button with default settings", () => {
+    describe("When it is displayed with the text Enregistrer", () => {
+      test("Then it carries that text and stays a plain button, without submitting a form", async () => {
         const button = await mountSuspended(Button, { slots: { default: "Enregistrer" } });
 
         expect(button.text()).toBe("Enregistrer");
         expect(button.attributes("type")).toBe("button");
       });
 
-      test("Then il a l'apparence principale", async () => {
+      test("Then it has the primary appearance", async () => {
         const button = await mountSuspended(Button, { slots: { default: "Enregistrer" } });
 
         expect(button.classes()).toContain("button--primary");
@@ -21,9 +21,9 @@ describe("bouton de l'interface", () => {
     });
   });
 
-  describe("Given un bouton de contour et de petite taille destiné à envoyer un formulaire", () => {
-    describe("When on l'affiche", () => {
-      test("Then il en prend l'apparence et le type d'envoi", async () => {
+  describe("Given a small outline button meant to submit a form", () => {
+    describe("When it is displayed", () => {
+      test("Then it takes that appearance and the submit type", async () => {
         const button = await mountSuspended(Button, {
           props: { variant: "outline", size: "small", type: "submit" },
         });
@@ -36,9 +36,9 @@ describe("bouton de l'interface", () => {
     });
   });
 
-  describe("Given un bouton désactivé", () => {
-    describe("When on l'affiche", () => {
-      test("Then il est inutilisable", async () => {
+  describe("Given a disabled button", () => {
+    describe("When it is displayed", () => {
+      test("Then it cannot be used", async () => {
         const button = await mountSuspended(Button, { props: { disabled: true } });
 
         expect(button.attributes("disabled")).toBeDefined();

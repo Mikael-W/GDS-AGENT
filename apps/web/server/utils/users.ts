@@ -17,7 +17,7 @@ export async function enregistrer(identite: Identity, db = getDb()): Promise<Use
     .values({ sub: identite.sub, email: identite.email, name: identite.name, role })
     .onConflictDoUpdate({
       target: users.sub,
-      set: { email: identite.email, role, vuLe: sql`now()` },
+      set: { email: identite.email, role, seenAt: sql`now()` },
     })
     .returning();
   if (!row) throw new Error("Enregistrement du compte impossible");

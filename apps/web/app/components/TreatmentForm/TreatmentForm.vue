@@ -9,11 +9,11 @@ const emit = defineEmits<TreatmentFormEvents>();
 
 const comment = ref("");
 const busy = ref(false);
-const echec = ref("");
+const failure = ref("");
 
-async function traiter() {
+async function handle() {
   busy.value = true;
-  echec.value = "";
+  failure.value = "";
   try {
     await $fetch(`${root}/traitement`, {
       method: "POST",
@@ -21,7 +21,7 @@ async function traiter() {
     });
     emit("handled");
   } catch (e) {
-    echec.value = serverMessage(
+    failure.value = serverMessage(
       e,
       "Le traitement n'a pas pu être enregistré. Réessayez dans un instant.",
     );
@@ -32,7 +32,7 @@ async function traiter() {
 </script>
 
 <template>
-  <form class="formulaire" @submit.prevent="traiter">
+  <form class="formulaire" @submit.prevent="handle">
     <p class="discret">Une alerte non traitée reste visible et revient dans les rappels.</p>
     <label for="commentaire" class="etiquette-champ">Commentaire</label>
     <textarea
@@ -43,7 +43,7 @@ async function traiter() {
       required
       placeholder="Ce qui a été décidé, et par qui"
     />
-    <p v-if="echec" role="alert" class="erreur">{{ echec }}</p>
+    <p v-if="failure" role="alert" class="erreur">{{ failure }}</p>
     <div>
       <Button type="submit" :disabled="busy || comment.trim() === ''">
         Marquer comme traité

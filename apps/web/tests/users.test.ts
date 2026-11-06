@@ -15,28 +15,28 @@ describe.skipIf(!url)("comptes (base PostgreSQL)", () => {
   });
   afterAll(() => db.$client.end());
 
-  it("enregistre un compte par son sub, une seule fois", async () => {
-    const premier = await enregistrer(
+  it("records an account by its sub, only once", async () => {
+    const first = await enregistrer(
       { sub: "sub-1", email: "camille@exemple.test", name: "Camille" },
       db,
     );
     const second = await enregistrer({ sub: "sub-1", email: "camille@exemple.test" }, db);
-    expect(second.id).toBe(premier.id);
+    expect(second.id).toBe(first.id);
     expect(second.name).toBe("Camille");
   });
 
-  it("ne donne pas l'ancien compte à une boîte réattribuée", async () => {
+  it("does not give the old account to a reassigned mailbox", async () => {
     await enregistrer({ sub: "ancien", email: "boite@exemple.test" }, db);
-    const nouveau = await enregistrer({ sub: "nouveau", email: "boite@exemple.test" }, db);
-    expect(nouveau.sub).toBe("nouveau");
+    const created = await enregistrer({ sub: "nouveau", email: "boite@exemple.test" }, db);
+    expect(created.sub).toBe("nouveau");
   });
 
-  it("renomme le compte", async () => {
+  it("renames the account", async () => {
     await rename("sub-1", "Camille Martin", db);
     expect((await trouver("sub-1", db))?.name).toBe("Camille Martin");
   });
 
-  it("recopie le rôle de Keycloak à chaque connexion, y compris un retrait", async () => {
+  it("copies the Keycloak role at each login, including a removal", async () => {
     await enregistrer({ sub: "sub-role", role: "owner" }, db);
     expect((await trouver("sub-role", db))?.role).toBe("owner");
     await enregistrer({ sub: "sub-role", role: "membre" }, db);

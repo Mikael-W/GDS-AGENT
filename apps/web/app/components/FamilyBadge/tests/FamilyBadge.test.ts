@@ -3,63 +3,63 @@ import { describe, expect, test } from "vitest";
 
 import FamilyBadge from "../FamilyBadge.vue";
 
-describe("étiquette de famille d'alerte", () => {
-  describe("Given une alerte de réception manquante dont l'échéance est dépassée", () => {
-    describe("When on affiche l'étiquette", () => {
-      test("Then on lit le nom de la famille, signalé en retard", async () => {
+describe("alert family badge", () => {
+  describe("Given a missing reception alert whose deadline has passed", () => {
+    describe("When the badge is displayed", () => {
+      test("Then the family name is read", async () => {
         const props = { family: "reception", urgency: "retard" } as const;
 
-        const etiquette = await mountSuspended(FamilyBadge, { props });
+        const badge = await mountSuspended(FamilyBadge, { props });
 
-        expect(etiquette.text()).toBe("Réception manquante");
+        expect(badge.text()).toBe("Réception manquante");
       });
 
-      test("Then elle est signalée en retard", async () => {
+      test("Then it is flagged as late", async () => {
         const props = { family: "reception", urgency: "retard" } as const;
 
-        const etiquette = await mountSuspended(FamilyBadge, { props });
+        const badge = await mountSuspended(FamilyBadge, { props });
 
-        expect(etiquette.classes()).toContain("etiquette--retard");
+        expect(badge.classes()).toContain("etiquette--retard");
       });
     });
   });
 
-  describe("Given une alerte de retenue de garantie dans trois semaines", () => {
-    describe("When on affiche l'étiquette", () => {
-      test("Then on lit le nom de la famille", async () => {
+  describe("Given a retention guarantee alert in three weeks", () => {
+    describe("When the badge is displayed", () => {
+      test("Then the family name is read", async () => {
         const props = { family: "garantie", urgency: "attention" } as const;
 
-        const etiquette = await mountSuspended(FamilyBadge, { props });
+        const badge = await mountSuspended(FamilyBadge, { props });
 
-        expect(etiquette.text()).toBe("Retenue de garantie");
+        expect(badge.text()).toBe("Retenue de garantie");
       });
 
-      test("Then elle demande de l'attention", async () => {
+      test("Then it asks for attention", async () => {
         const props = { family: "garantie", urgency: "attention" } as const;
 
-        const etiquette = await mountSuspended(FamilyBadge, { props });
+        const badge = await mountSuspended(FamilyBadge, { props });
 
-        expect(etiquette.classes()).toContain("etiquette--attention");
+        expect(badge.classes()).toContain("etiquette--attention");
       });
     });
   });
 
-  describe("Given une reconduction dans deux mois", () => {
-    describe("When on affiche l'étiquette", () => {
-      test("Then on lit le nom de la famille", async () => {
+  describe("Given a renewal in two months", () => {
+    describe("When the badge is displayed", () => {
+      test("Then the family name is read", async () => {
         const props = { family: "reconduction", urgency: "information" } as const;
 
-        const etiquette = await mountSuspended(FamilyBadge, { props });
+        const badge = await mountSuspended(FamilyBadge, { props });
 
-        expect(etiquette.text()).toBe("Reconduction");
+        expect(badge.text()).toBe("Reconduction");
       });
 
-      test("Then elle reste à titre d'information", async () => {
+      test("Then it stays informational", async () => {
         const props = { family: "reconduction", urgency: "information" } as const;
 
-        const etiquette = await mountSuspended(FamilyBadge, { props });
+        const badge = await mountSuspended(FamilyBadge, { props });
 
-        expect(etiquette.classes()).toContain("etiquette--information");
+        expect(badge.classes()).toContain("etiquette--information");
       });
     });
   });

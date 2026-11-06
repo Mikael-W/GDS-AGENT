@@ -14,7 +14,7 @@ export default defineConfig({
       {
         extends: true,
         test: {
-          name: "unitaires",
+          name: "units",
           environment: "node",
           include: ["tests/**/*.test.ts"],
           setupFiles: ["tests/preparation.ts"],
@@ -22,7 +22,7 @@ export default defineConfig({
       },
       await defineVitestProject({
         test: {
-          name: "composants",
+          name: "components",
           environment: "nuxt",
           include: ["app/components/**/tests/**/*.test.ts"],
         },

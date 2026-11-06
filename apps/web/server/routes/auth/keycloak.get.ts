@@ -5,7 +5,7 @@ declare module "#auth-utils" {
     id: string;
     role: Role;
     email?: string;
-    nom?: string;
+    name?: string;
   }
   interface UserSession {
     idToken?: string;
@@ -13,18 +13,18 @@ declare module "#auth-utils" {
 }
 
 export default defineOAuthKeycloakEventHandler({
-  async onSuccess(event, { user: profil, tokens }) {
-    const sub = String(profil.sub);
-    const role = roleDepuisJeton(tokens.access_token);
-    await enregistrer({ sub, email: profil.email, nom: profil.name, role });
+  async onSuccess(event, { user: profile, tokens }) {
+    const sub = String(profile.sub);
+    const role = roleFromToken(tokens.access_token);
+    await upsertUser({ sub, email: profile.email, name: profile.name, role });
     await setUserSession(event, {
-      user: { id: sub, role, email: profil.email, nom: profil.name },
+      user: { id: sub, role, email: profile.email, name: profile.name },
       idToken: tokens.id_token,
     });
     return sendRedirect(event, "/tableau-de-bord");
   },
-  onError(event, erreur) {
-    console.error("auth keycloak", erreur);
+  onError(event, error) {
+    console.error("auth keycloak", error);
     return sendRedirect(event, "/?erreur=connexion");
   },
 });

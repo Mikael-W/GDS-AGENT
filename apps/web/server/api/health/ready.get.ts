@@ -1,5 +1,5 @@
 export default defineEventHandler(async (event) => {
-  const { ok, corps } = await verifier();
+  const { ok, body } = await verify();
   setResponseStatus(event, ok ? 200 : 503);
-  return corps;
+  return body;
 });

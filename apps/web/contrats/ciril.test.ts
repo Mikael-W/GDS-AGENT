@@ -1,49 +1,49 @@
 import { describe, expect, it } from "vitest";
 
-import { getAccessList, getContrats, urlFinancesDepuisAcces } from "@/server/utils/ciril";
+import { financeUrlFromAccess, getAccessList, getContrats } from "@/server/utils/ciril";
 
 const url = process.env.CIRIL_URL;
-const utilisateur = process.env.CIRIL_UTILISATEUR;
-const motDePasse = process.env.CIRIL_MOT_DE_PASSE;
+const user = process.env.CIRIL_UTILISATEUR;
+const password = process.env.CIRIL_MOT_DE_PASSE;
 
 /**
  * Contrat CIRIL : appel réel à la sandbox (lecture seule). Sans credentials,
  * les tests sont ignorés : utile pour les clones vierges.
  */
-const credentials = url && utilisateur && motDePasse ? { url, utilisateur, motDePasse } : null;
+const credentials = url && user && password ? { url, user, password } : null;
 
 describe.skipIf(!credentials)("CIRIL (sandbox)", () => {
-  it("getAccessList ouvre une session Finances avec une clé non vide", async () => {
+  it("getAccessList opens a Finances session with a non-empty key", async () => {
     if (!credentials) return;
     const url = `${credentials.url.replace(/\/$/, "")}/cgi-bin/ws.exe/cgi-bin/acces.exe?ws`;
     const points = await getAccessList({
       url,
-      utilisateur: credentials.utilisateur,
-      motDePasse: credentials.motDePasse,
+      user: credentials.user,
+      password: credentials.password,
     });
     expect(points.length).toBeGreaterThan(0);
-    const finances = points.find((p) => p.netApplication === "Finances");
-    expect(finances).toBeDefined();
-    expect(finances?.urlAbsolue).toMatch(/^https:\/\/.+\/cgi-bin\/web2java\.exe\?/);
-    expect(finances?.cle.length).toBeGreaterThan(20);
+    const finance = points.find((p) => p.netApplication === "Finances");
+    expect(finance).toBeDefined();
+    expect(finance?.absoluteUrl).toMatch(/^https:\/\/.+\/cgi-bin\/web2java\.exe\?/);
+    expect(finance?.key.length).toBeGreaterThan(20);
   }, 30_000);
 
-  it("getContrats renvoie au moins un marché exploitable", async () => {
+  it("getContrats returns at least one usable contract", async () => {
     if (!credentials) return;
-    const urlAcces = `${credentials.url.replace(/\/$/, "")}/cgi-bin/ws.exe/cgi-bin/acces.exe?ws`;
+    const accessUrl = `${credentials.url.replace(/\/$/, "")}/cgi-bin/ws.exe/cgi-bin/acces.exe?ws`;
     const points = await getAccessList({
-      url: urlAcces,
-      utilisateur: credentials.utilisateur,
-      motDePasse: credentials.motDePasse,
+      url: accessUrl,
+      user: credentials.user,
+      password: credentials.password,
     });
-    const finances = points.find((p) => p.netApplication === "Finances");
-    if (!finances) throw new Error("point d'accès Finances absent");
-    const contrats = await getContrats({
-      urlFinances: urlFinancesDepuisAcces(finances.urlAbsolue),
-      acces: finances.urlAbsolue,
+    const finance = points.find((p) => p.netApplication === "Finances");
+    if (!finance) throw new Error("point d'accès Finances absent");
+    const contracts = await getContrats({
+      financeUrl: financeUrlFromAccess(finance.absoluteUrl),
+      access: finance.absoluteUrl,
     });
-    expect(contrats.length).toBeGreaterThan(0);
-    const premier = contrats[0];
-    expect(premier?.numeroContrat?.length).toBeGreaterThan(0);
+    expect(contracts.length).toBeGreaterThan(0);
+    const first = contracts[0];
+    expect(first?.numeroContrat?.length).toBeGreaterThan(0);
   }, 60_000);
 });

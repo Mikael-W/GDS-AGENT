@@ -1,45 +1,45 @@
 <script setup lang="ts">
-import type { Utilisateur } from "@projet/db/schema";
+import type { User } from "@projet/db/schema";
 
-definePageMeta({ middleware: "connecte" });
+definePageMeta({ middleware: "authenticated" });
 
 useHead({ title: "Tableau de bord - Suivi des marchés" });
 
 const { user } = useUserSession();
 const { public: config } = useRuntimeConfig();
-const estDev = config.environnement === "dev";
+const isDev = config.environment === "dev";
 
-const { data: compte, refresh } = await useFetch<Utilisateur | null>("/api/me", {
+const { data: account, refresh } = await useFetch<User | null>("/api/me", {
   default: () => null,
 });
 
-const nomAffiche = computed(
-  () => compte.value?.nom ?? compte.value?.email ?? user.value?.nom ?? "à vous",
+const displayName = computed(
+  () => account.value?.name ?? account.value?.email ?? user.value?.name ?? "à vous",
 );
 
-type ResultatSynchro = {
-  pointAcces: string;
-  recus: number;
-  inseres: number;
-  misAJour: number;
-  inchanges: number;
+type SynchronizationResult = {
+  accessPoint: string;
+  received: number;
+  inserted: number;
+  updated: number;
+  unchanged: number;
 };
 
-const synchro = ref<ResultatSynchro | null>(null);
-const synchroEnCours = ref(false);
-const synchroErreur = ref<string | null>(null);
+const synchronization = ref<SynchronizationResult | null>(null);
+const synchronizationRunning = ref(false);
+const synchronizationError = ref<string | null>(null);
 
-async function synchroniserCiril() {
-  synchroErreur.value = null;
-  synchro.value = null;
-  synchroEnCours.value = true;
+async function synchronizeCiril() {
+  synchronizationError.value = null;
+  synchronization.value = null;
+  synchronizationRunning.value = true;
   try {
-    synchro.value = await $fetch<ResultatSynchro>("/api/dev/synchroniser", { method: "POST" });
+    synchronization.value = await $fetch<SynchronizationResult>("/api/dev/synchroniser", { method: "POST" });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Synchronisation impossible";
-    synchroErreur.value = message.replace(/^.*: /, "");
+    synchronizationError.value = message.replace(/^.*: /, "");
   } finally {
-    synchroEnCours.value = false;
+    synchronizationRunning.value = false;
   }
 }
 </script>
@@ -47,7 +47,7 @@ async function synchroniserCiril() {
 <template>
   <div class="page">
     <section class="accueil">
-      <h1 class="titre-page">Bonjour {{ nomAffiche }}.</h1>
+      <h1 class="titre-page">Bonjour {{ displayName }}.</h1>
       <p class="discret">
         Aucune donnée n'est encore remontée de CIRIL. Les écrans de suivi arrivent avec
         la synchronisation.
@@ -76,42 +76,42 @@ async function synchroniserCiril() {
       </article>
     </section>
 
-    <section v-if="estDev" class="bloc">
+    <section v-if="isDev" class="bloc">
       <h2 class="titre-carte">Synchronisation CIRIL (dev)</h2>
       <p class="discret">
         Récupère les contrats de la sandbox et les insère dans la table marchés.
       </p>
       <div>
-        <Bouton variante="secondaire" :disabled="synchroEnCours" @click="synchroniserCiril">
-          {{ synchroEnCours ? "Synchronisation en cours..." : "Lancer la synchronisation" }}
-        </Bouton>
+        <Button variant="secondary" :disabled="synchronizationRunning" @click="synchronizeCiril">
+          {{ synchronizationRunning ? "Synchronisation en cours..." : "Lancer la synchronisation" }}
+        </Button>
       </div>
-      <p v-if="synchroErreur" role="alert" class="erreur">
-        {{ synchroErreur }}
+      <p v-if="synchronizationError" role="alert" class="erreur">
+        {{ synchronizationError }}
       </p>
-      <dl v-if="synchro" class="resultats">
+      <dl v-if="synchronization" class="resultats">
         <div>
           <dt class="discret">Reçus</dt>
-          <dd class="valeur">{{ synchro.recus }}</dd>
+          <dd class="valeur">{{ synchronization.received }}</dd>
         </div>
         <div>
           <dt class="discret">Insérés</dt>
-          <dd class="valeur">{{ synchro.inseres }}</dd>
+          <dd class="valeur">{{ synchronization.inserted }}</dd>
         </div>
         <div>
           <dt class="discret">Mis à jour</dt>
-          <dd class="valeur">{{ synchro.misAJour }}</dd>
+          <dd class="valeur">{{ synchronization.updated }}</dd>
         </div>
         <div>
           <dt class="discret">Inchangés</dt>
-          <dd class="valeur">{{ synchro.inchanges }}</dd>
+          <dd class="valeur">{{ synchronization.unchanged }}</dd>
         </div>
       </dl>
     </section>
 
     <section class="bloc">
       <h2 class="titre-carte">Mon compte</h2>
-      <FormulaireNom :nom-initial="compte?.nom ?? ''" @enregistre="refresh" />
+      <NameForm :initial-name="account?.name ?? ''" @saved="refresh" />
     </section>
   </div>
 </template>

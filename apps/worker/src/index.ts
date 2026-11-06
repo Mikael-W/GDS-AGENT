@@ -1,16 +1,16 @@
-import { creerBase } from "@projet/db";
+import { createDatabase } from "@projet/db";
 import * as Sentry from "@sentry/node";
 
-import { lireEnv } from "./env";
-import { demarrer } from "./worker";
+import { readEnv } from "./env";
+import { start } from "./worker";
 
-const env = lireEnv(process.env);
+const env = readEnv(process.env);
 if (env.SENTRY_DSN) {
   Sentry.init({ dsn: env.SENTRY_DSN, release: env.GIT_SHA, environment: env.ENVIRONNEMENT });
 }
 
-const db = creerBase(env.DATABASE_URL, 5);
-const boss = await demarrer(env.DATABASE_URL, db);
+const db = createDatabase(env.DATABASE_URL, 5);
+const boss = await start(env.DATABASE_URL, db);
 console.log(`worker démarré (${env.GIT_SHA})`);
 
 // Arrêt propre : les tâches en cours finissent, aucune n'est reprise ensuite

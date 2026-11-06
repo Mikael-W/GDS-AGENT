@@ -1,51 +1,51 @@
 <script setup lang="ts">
 import {
-  type EtatMarche,
-  filtrer,
-  formaterMontant,
-  formaterMontantCompact,
-  formaterPeriode,
-  type MarcheListe,
-  montantNotifie,
-  services,
-  synthese,
-} from "#shared/domaine/marches";
-import { aujourdhuiParis, paginer, pluriel } from "#shared/domaine/affichage";
+  type ContractState,
+  filter,
+  formatAmount,
+  formatCompactAmount,
+  formatPeriod,
+  type ContractListItem,
+  notifiedAmount,
+  departments,
+  summarize,
+} from "#shared/domain/contracts";
+import { parisToday, paginate, plural } from "#shared/domain/display";
 
-definePageMeta({ middleware: "connecte" });
+definePageMeta({ middleware: "authenticated" });
 
 useHead({ title: "Marchés - Suivi des marchés" });
 
-const aujourdhui = useState("aujourdhui", () => aujourdhuiParis());
+const today = useState("today", () => parisToday());
 
-const { data: marches, error } = await useFetch<MarcheListe[]>("/api/marches", {
+const { data: contracts, error } = await useFetch<ContractListItem[]>("/api/marches", {
   default: () => [],
 });
 
-const recherche = ref("");
+const search = ref("");
 const service = ref("");
-const etat = ref<EtatMarche>("en_cours");
-const numeroPage = ref(1);
+const state = ref<ContractState>("en_cours");
+const pageNumber = ref(1);
 
-watch([recherche, service, etat], () => {
-  numeroPage.value = 1;
+watch([search, service, state], () => {
+  pageNumber.value = 1;
 });
 
-const resume = computed(() => synthese(marches.value, aujourdhui.value));
-const servicesProposes = computed(() => services(marches.value));
+const summary = computed(() => summarize(contracts.value, today.value));
+const offeredDepartments = computed(() => departments(contracts.value));
 const page = computed(() =>
-  paginer(
-    filtrer(marches.value, { recherche: recherche.value, service: service.value, etat: etat.value }, aujourdhui.value),
-    numeroPage.value,
+  paginate(
+    filter(contracts.value, { search: search.value, service: service.value, state: state.value }, today.value),
+    pageNumber.value,
   ),
 );
 
 
-const precedente = () => {
-  numeroPage.value = page.value.page - 1;
+const previous = () => {
+  pageNumber.value = page.value.page - 1;
 };
-const suivante = () => {
-  numeroPage.value = page.value.page + 1;
+const next = () => {
+  pageNumber.value = page.value.page + 1;
 };
 </script>
 
@@ -55,14 +55,14 @@ const suivante = () => {
       <div>
         <h1 class="titre-page">Marchés</h1>
         <p class="discret">
-          {{ pluriel(resume.actifs, "marché") }} en cours, recopiés de CIRIL chaque nuit.
+          {{ plural(summary.active, "marché") }} en cours, recopiés de CIRIL chaque nuit.
         </p>
       </div>
       <div class="recherche">
         <label for="recherche" class="visuellement-cache">Rechercher un marché</label>
         <input
           id="recherche"
-          v-model="recherche"
+          v-model="search"
           type="search"
           class="champ"
           placeholder="Objet, numéro ou titulaire"
@@ -76,9 +76,9 @@ const suivante = () => {
 
     <template v-else>
     <section aria-label="Chiffres clés" class="chiffres">
-      <CarteChiffre libelle="Marchés en cours" :valeur="String(resume.actifs)" />
-      <CarteChiffre libelle="Lots suivis" :valeur="String(resume.lots)" />
-      <CarteChiffre libelle="Montant notifié" :valeur="formaterMontantCompact(resume.montantNotifie)" />
+      <FigureCard label="Marchés en cours" :value="String(summary.active)" />
+      <FigureCard label="Lots suivis" :value="String(summary.lots)" />
+      <FigureCard label="Montant notifié" :value="formatCompactAmount(summary.notifiedAmount)" />
     </section>
 
     <section class="liste">
@@ -87,10 +87,10 @@ const suivante = () => {
         <label for="service" class="visuellement-cache">Service</label>
         <select id="service" v-model="service" class="filtre">
           <option value="">Tous les services</option>
-          <option v-for="nom in servicesProposes" :key="nom" :value="nom">{{ nom }}</option>
+          <option v-for="name in offeredDepartments" :key="name" :value="name">{{ name }}</option>
         </select>
         <label for="etat" class="visuellement-cache">État</label>
-        <select id="etat" v-model="etat" class="filtre">
+        <select id="etat" v-model="state" class="filtre">
           <option value="en_cours">En cours</option>
           <option value="termines">Terminés</option>
           <option value="tous">Tous les états</option>
@@ -110,17 +110,17 @@ const suivante = () => {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="m in page.lignes" :key="m.reference">
+            <tr v-for="m in page.rows" :key="m.reference">
               <td>
-                <p class="marche">{{ m.objet ?? "Sans objet" }}</p>
+                <p class="marche">{{ m.subject ?? "Sans objet" }}</p>
                 <p class="reference">
-                  {{ m.reference }}<template v-if="m.lots > 0"> · {{ pluriel(m.lots, "lot") }}</template>
+                  {{ m.reference }}<template v-if="m.lots > 0"> · {{ plural(m.lots, "lot") }}</template>
                 </p>
               </td>
               <td>{{ m.service ?? "Non renseigné" }}</td>
-              <td>{{ m.titulaire ?? "Non renseigné" }}</td>
-              <td>{{ formaterPeriode(m.debuteLe, m.finitLe) }}</td>
-              <td class="montant">{{ formaterMontant(montantNotifie(m)) }}</td>
+              <td>{{ m.holder ?? "Non renseigné" }}</td>
+              <td>{{ formatPeriod(m.startsOn, m.endsOn) }}</td>
+              <td class="montant">{{ formatAmount(notifiedAmount(m)) }}</td>
             </tr>
           </tbody>
         </table>
@@ -130,16 +130,16 @@ const suivante = () => {
 
       <footer class="liste__pied">
         <p class="discret" aria-live="polite">
-          Marchés affichés : {{ page.lignes.length }} sur {{ page.total }}
+          Marchés affichés : {{ page.rows.length }} sur {{ page.total }}
         </p>
         <nav aria-label="Pagination" class="pagination">
-          <Bouton variante="contour" taille="petit" :disabled="page.page <= 1" @click="precedente">
+          <Button variant="outline" size="small" :disabled="page.page <= 1" @click="previous">
             Précédent
-          </Bouton>
+          </Button>
           <p class="discret">Page {{ page.page }} sur {{ page.pages }}</p>
-          <Bouton variante="contour" taille="petit" :disabled="page.page >= page.pages" @click="suivante">
+          <Button variant="outline" size="small" :disabled="page.page >= page.pages" @click="next">
             Suivant
-          </Bouton>
+          </Button>
         </nav>
       </footer>
     </section>

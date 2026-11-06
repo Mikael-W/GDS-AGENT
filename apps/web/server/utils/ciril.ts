@@ -6,10 +6,10 @@ import { z } from "zod";
  * coffre. Les secrets ne passent jamais dans les journaux (l'enveloppe
  * tracée par CIRIL_TRACE masque le mot de passe et la clé de session).
  */
-export class ErreurCiril extends Error {}
+export class CirilError extends Error {}
 
-function echapper(valeur: string): string {
-  return valeur
+function escapeXml(value: string): string {
+  return value
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
@@ -17,75 +17,75 @@ function echapper(valeur: string): string {
     .replace(/'/g, "&apos;");
 }
 
-function enveloppe(namespace: string, operation: string, parametres: [string, string][]): string {
-  const corps = parametres.map(([nom, valeur]) => `<${nom}>${echapper(valeur)}</${nom}>`).join("");
+function envelope(namespace: string, operation: string, parameters: [string, string][]): string {
+  const body = parameters.map(([name, value]) => `<${name}>${escapeXml(value)}</${name}>`).join("");
   return `<?xml version="1.0" encoding="UTF-8"?>
 <SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <SOAP-ENV:Body>
-    <m:${operation} xmlns:m="${namespace}">${corps}</m:${operation}>
+    <m:${operation} xmlns:m="${namespace}">${body}</m:${operation}>
   </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>`;
 }
 
-async function appel(
+async function call(
   url: string,
   namespace: string,
   operation: string,
-  parametres: [string, string][],
+  parameters: [string, string][],
   soapAction = `${namespace}#${operation}`,
   secrets: string[] = [],
 ) {
-  const corps = enveloppe(namespace, operation, parametres);
-  const reponse = await fetch(url, {
+  const body = envelope(namespace, operation, parameters);
+  const response = await fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "text/xml; charset=utf-8",
       SOAPAction: soapAction,
     },
-    body: corps,
+    body: body,
   });
-  const texte = await reponse.text();
+  const text = await response.text();
   if (process.env.CIRIL_TRACE) {
-    let corpsMasque = corps;
+    let maskedBody = body;
     for (const secret of secrets) {
-      if (secret) corpsMasque = corpsMasque.split(secret).join("***");
+      if (secret) maskedBody = maskedBody.split(secret).join("***");
     }
     console.log(
-      `\n--- CIRIL ${operation} requête ---\n${corpsMasque}\n--- réponse (${reponse.status}) ---\n${texte.slice(0, 4000)}\n--- fin ---\n`,
+      `\n--- CIRIL ${operation} requête ---\n${maskedBody}\n--- réponse (${response.status}) ---\n${text.slice(0, 4000)}\n--- fin ---\n`,
     );
   }
-  if (!reponse.ok) {
-    const detail = texte.match(/<detail[^>]*>([\s\S]*?)<\/detail>/)?.[1];
-    const message = texte.match(/<faultstring[^>]*>([\s\S]*?)<\/faultstring>/)?.[1];
-    throw new ErreurCiril(
-      `CIRIL ${operation} ${reponse.status} : ${message ?? ""} ${detail ?? texte.slice(0, 800)}`,
+  if (!response.ok) {
+    const details = text.match(/<detail[^>]*>([\s\S]*?)<\/detail>/)?.[1];
+    const message = text.match(/<faultstring[^>]*>([\s\S]*?)<\/faultstring>/)?.[1];
+    throw new CirilError(
+      `CIRIL ${operation} ${response.status} : ${message ?? ""} ${details ?? text.slice(0, 800)}`,
     );
   }
-  const fault = texte.match(/<faultstring[^>]*>([^<]+)<\/faultstring>/);
-  if (fault) throw new ErreurCiril(`CIRIL ${operation} fault : ${fault[1]}`);
-  return texte;
+  const fault = text.match(/<faultstring[^>]*>([^<]+)<\/faultstring>/);
+  if (fault) throw new CirilError(`CIRIL ${operation} fault : ${fault[1]}`);
+  return text;
 }
 
-function decoderEntites(texte: string): string {
-  return texte.replace(/&#(\d+);/g, (_, code: string) => String.fromCharCode(Number(code)));
+function decodeEntities(text: string): string {
+  return text.replace(/&#(\d+);/g, (_, code: string) => String.fromCharCode(Number(code)));
 }
 
-function extraireItems(xml: string): Record<string, string>[] {
+function extractItems(xml: string): Record<string, string>[] {
   const items: Record<string, string>[] = [];
-  for (const bloc of xml.matchAll(/<item[^>]*>([\s\S]*?)<\/item>/g)) {
-    const corps = bloc[1] ?? "";
-    const champs: Record<string, string> = {};
-    for (const champ of corps.matchAll(/<([a-zA-Z]+)[^>]*>([^<]*)<\/\1>/g)) {
-      const nom = champ[1];
-      const valeur = champ[2];
-      if (nom !== undefined && valeur !== undefined) champs[nom] = decoderEntites(valeur);
+  for (const block of xml.matchAll(/<item[^>]*>([\s\S]*?)<\/item>/g)) {
+    const body = block[1] ?? "";
+    const fields: Record<string, string> = {};
+    for (const field of body.matchAll(/<([a-zA-Z]+)[^>]*>([^<]*)<\/\1>/g)) {
+      const name = field[1];
+      const value = field[2];
+      if (name !== undefined && value !== undefined) fields[name] = decodeEntities(value);
     }
-    items.push(champs);
+    items.push(fields);
   }
   return items;
 }
 
-const AccessPointBrut = z.object({
+const RawAccessPoint = z.object({
   client: z.string().optional(),
   database: z.string().optional(),
   application: z.string().optional(),
@@ -103,8 +103,8 @@ export type AccessPoint = {
   netApplication?: string;
   schema?: string;
   label?: string;
-  urlAbsolue: string;
-  cle: string;
+  absoluteUrl: string;
+  key: string;
 };
 
 /**
@@ -114,41 +114,41 @@ export type AccessPoint = {
  */
 export async function getAccessList(opts: {
   url: string;
-  utilisateur: string;
-  motDePasse: string;
+  user: string;
+  password: string;
 }): Promise<AccessPoint[]> {
   const namespace = "Ciril:Ciril:AccessInfo";
-  const texte = await appel(
+  const text = await call(
     opts.url,
     namespace,
     "getAccessList",
     [
-      ["param-1", opts.utilisateur],
-      ["param-2", opts.motDePasse],
+      ["param-1", opts.user],
+      ["param-2", opts.password],
       ["param-3", ""],
       ["param-4", ""],
     ],
     `${namespace}#getAccessList`,
-    [opts.motDePasse],
+    [opts.password],
   );
-  return extraireItems(texte).map((champs) => {
-    const brut = AccessPointBrut.parse(champs);
-    const urlAbsolue = new URL(brut.URL, opts.url).toString();
-    const cle = new URL(urlAbsolue).search.replace(/^\?/, "");
+  return extractItems(text).map((fields) => {
+    const raw = RawAccessPoint.parse(fields);
+    const absoluteUrl = new URL(raw.URL, opts.url).toString();
+    const key = new URL(absoluteUrl).search.replace(/^\?/, "");
     return {
-      client: brut.client,
-      database: brut.database,
-      application: brut.application,
-      netApplication: brut.netApplication,
-      schema: brut.schema,
-      label: brut.label,
-      urlAbsolue,
-      cle,
+      client: raw.client,
+      database: raw.database,
+      application: raw.application,
+      netApplication: raw.netApplication,
+      schema: raw.schema,
+      label: raw.label,
+      absoluteUrl,
+      key,
     };
   });
 }
 
-const ContratBrut = z.object({
+const RawContract = z.object({
   numeroContrat: z.string().optional(),
   libelleContrat: z.string().optional(),
   objetContrat: z.string().optional(),
@@ -166,38 +166,38 @@ const ContratBrut = z.object({
   libelleNomenclature: z.string().optional(),
 });
 
-export type ContratCiril = z.infer<typeof ContratBrut>;
+export type CirilContract = z.infer<typeof RawContract>;
 
 /**
  * Liste des contrats visibles depuis le point d'accès. `acces` est l'URL
  * absolue du point d'accès rendue par getAccessList (le serveur cherche la
  * clé de session dans la query string de cette URL). `requete` est un filtre
  * texte CIRIL ; vide = tout. Les montants et dates restent en string, le
- * mapping métier est côté `ciril-marches.ts`.
+ * mapping métier est côté `ciril-contracts.ts`.
  */
 export async function getContrats(opts: {
-  urlFinances: string;
-  acces: string;
-  requete?: string;
-}): Promise<ContratCiril[]> {
+  financeUrl: string;
+  access: string;
+  query?: string;
+}): Promise<CirilContract[]> {
   const namespace = "Ciril:Finances:ExportFinances";
-  const texte = await appel(
-    opts.urlFinances,
+  const text = await call(
+    opts.financeUrl,
     namespace,
     "getContrats",
     [
-      ["acces", opts.acces],
-      ["requete", opts.requete ?? ""],
+      ["acces", opts.access],
+      ["requete", opts.query ?? ""],
     ],
     "",
-    [opts.acces, new URL(opts.acces).search.replace(/^\?/, "")],
+    [opts.access, new URL(opts.access).search.replace(/^\?/, "")],
   );
-  return extraireItems(texte).map((champs) => ContratBrut.parse(champs));
+  return extractItems(text).map((fields) => RawContract.parse(fields));
 }
 
 /** Depuis une URL d'accès web (web2java.exe), construit l'URL du webservice
  * `fin_export_finances.exe?ws` sur le même hôte. */
-export function urlFinancesDepuisAcces(urlAbsolueAcces: string): string {
-  const u = new URL(urlAbsolueAcces);
+export function financeUrlFromAccess(absoluteAccessUrl: string): string {
+  const u = new URL(absoluteAccessUrl);
   return `${u.protocol}//${u.host}/cgi-bin/ws.exe/cgi-bin/fin_export_finances.exe?ws`;
 }

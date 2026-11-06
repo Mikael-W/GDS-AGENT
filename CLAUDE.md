@@ -12,10 +12,11 @@ Le code reflète à tout instant exactement l'état voulu, sans strate morte, qu
 
 ## Règles maison
 
+- Le code est en anglais : fichiers, dossiers, composants, fonctions, variables, types et descriptions de tests. Restent en français le texte de l'interface, les URL des pages et de l'API, les noms de tables et de colonnes SQL, les classes CSS, les clés de la réponse de santé et les valeurs enregistrées. Messages de commit en anglais (`type(scope): subject`), documentation (CLAUDE.md, ADR, kanban, README) en français.
 - Aucun emoji et aucun tiret cadratin ni demi-cadratin, nulle part : interface, textes, commentaires, commits, réponses.
 - L'interface est en français, sans jargon technique : une erreur parle du produit, pas de l'infra.
 - Aucun déploiement sans demande explicite. Déployer = `make deploy`, jamais `docker compose` ni commandes à la main sur la VM.
-- Une branche par ticket (`<type>/<sujet-court>`), une demande de fusion, relue le vendredi : `main` ne reçoit que des fusions (ADR 0002). Lister ses propres fichiers (`git add <fichiers>`, jamais `git add -A` : d'autres sessions travaillent dans le même arbre). Un fichier inattendu dans `git status` : s'arrêter et demander. Messages en français : `type(portée): sujet`.
+- Une branche par ticket (`<type>/<sujet-court>`), une demande de fusion, relue le vendredi : `main` ne reçoit que des fusions (ADR 0002). Lister ses propres fichiers (`git add <fichiers>`, jamais `git add -A` : d'autres sessions travaillent dans le même arbre). Un fichier inattendu dans `git status` : s'arrêter et demander. Messages de commit en anglais : `type(scope): subject`.
 - Aucun secret ni donnée client dans Git : ni `.env`, ni fichier déposé, ni export, ni sauvegarde. Les secrets de prod vivent dans le coffre (`secret/gds/prod`), jamais à l'écran ni dans un journal.
 - Aucun mail réel depuis le poste : en local, tout part vers le Mailpit commun (`smtp://localhost:1025`, interface http://localhost:8025).
 - Appels LLM en Europe uniquement (Bedrock `eu-west-3`) ; un autre fournisseur s'inscrit d'abord comme sous-traitant dans `RUNBOOK.md`.
@@ -51,8 +52,8 @@ make help         # tout le reste
 | Web (Nuxt 4, Vue 3, Nitro) | `apps/web` : pages `app/pages/`, composants `app/components/`, routes serveur `server/api/`, utilitaires serveur `server/utils/`, réglages validés `server/utils/env.ts` (ADR 0004) |
 | Design | `docs/systeme-de-design.md` : direction retenue par le client (ADR 0005), jetons dans `apps/web/app/assets/css/main.css`, police Figtree importée dans ce fichier ; aucune couleur en dur dans un composant |
 | Connexion | `apps/web/server/api/auth/keycloak.get.ts` (nuxt-auth-utils, flux OIDC côté serveur), déconnexion `server/api/auth/deconnexion.post.ts` ; le navigateur ne voit que `user` via `useUserSession`, jamais les jetons |
-| Santé | `/api/health`, `/api/health/ready` (`server/utils/sante.ts` : base et planificateur), `/api/version` ; Caddy les sert aussi en `/health`, `/health/ready`, `/version` |
-| Base | PostgreSQL 17, Drizzle dans `packages/db` (partagé par le web et le worker) : schéma `src/schema.ts`, `creerBase(url, max)`, migrations `drizzle/` jouées au déploiement (service `migrations`) ; le web s'y connecte par `apps/web/server/utils/base.ts` |
+| Santé | `/api/health`, `/api/health/ready` (`server/utils/health.ts` : base et planificateur), `/api/version` ; Caddy les sert aussi en `/health`, `/health/ready`, `/version` |
+| Base | PostgreSQL 17, Drizzle dans `packages/db` (partagé par le web et le worker) : schéma `src/schema.ts`, `createDatabase(url, max)`, migrations `drizzle/` jouées au déploiement (service `migrations`) ; le web s'y connecte par `apps/web/server/utils/db.ts` |
 | Worker (pg-boss) | `apps/worker` : files et tâches planifiées (`src/worker.ts`), réglages validés `src/env.ts`, arrêt propre ; la tâche `maintenance.battement` écrit chaque minute dans `battements`, contrôlé par `/health/ready` (`planificateur`) |
 | LLM | `apps/web/server/utils/llm.ts` (Vercel AI SDK), prompts dans `apps/web/prompts/*.md`, jamais dans le code ; Biome refuse d'importer le SDK ailleurs |
 | Tests | `apps/web/tests/`, `apps/worker/tests/` ; contrats des API tierces dans `apps/web/contrats/` (chaque nuit) |

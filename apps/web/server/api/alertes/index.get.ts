@@ -1,6 +1,6 @@
-import { aujourdhuiParis } from "#shared/domaine/affichage";
+import { parisToday } from "#shared/domain/display";
 
 export default defineEventHandler(async (event) => {
   await requireUserSession(event);
-  return listerAlertes(aujourdhuiParis());
+  return listAlerts(parisToday());
 });

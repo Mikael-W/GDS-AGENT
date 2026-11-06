@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { paginate } from "#shared/domain/display";
+import { formatDate, paginate } from "#shared/domain/display";
 import {
   type AlertListItem,
   filter,
-  formatDate,
   FAMILY_LABELS,
   deadlineLabel,
   alertLink,

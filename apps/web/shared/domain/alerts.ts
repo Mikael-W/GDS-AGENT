@@ -84,11 +84,6 @@ export function deadlineLabel(daysRemaining: number): string {
   return daysRemaining < 0 ? `Dépassée de ${days} ${unit}` : `Dans ${days} ${unit}`;
 }
 
-export function formatDate(iso: string | null): string {
-  if (iso === null) return "Non renseignée";
-  return `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}`;
-}
-
 export function alertLink(alert: Pick<AlertListItem, "reference" | "family">): string {
   return `/alertes/${encodeURIComponent(alert.reference)}/${alert.family}`;
 }

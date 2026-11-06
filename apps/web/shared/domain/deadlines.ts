@@ -98,7 +98,7 @@ export function evaluate(
           today,
           contract.tacitRenewal
             ? `Le marché prend fin le ${formatDate(contract.endsOn)} et sera reconduit tacitement sans décision contraire.`
-            : `Le marché prend fin le ${formatDate(contract.endsOn)} : sa reconduction expresse doit être décidée avant cette date.`,
+            : `Le marché prend fin le ${formatDate(contract.endsOn)} : sa reconduction est expresse, elle n'est jamais automatique.`,
         ),
       );
     }
@@ -141,7 +141,7 @@ export function evaluate(
           contract,
           checkpoint,
           today,
-          `Le marché atteint six mois d'exécution le ${formatDate(checkpoint)} : un point d'étape est à faire avec le titulaire.`,
+          `Le marché atteint six mois d'exécution le ${formatDate(checkpoint)}.`,
         ),
       );
     }

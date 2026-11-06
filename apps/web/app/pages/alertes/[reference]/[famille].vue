@@ -20,26 +20,27 @@ useHead({ title: "Alerte - Suivi des marchés" });
 
 const commentaire = ref("");
 
-const { error: erreurTraitement, status, execute } = useFetch(`${racine}/traitement`, {
-  method: "POST",
-  body: computed(() => ({ commentaire: commentaire.value })),
-  immediate: false,
-  watch: false,
-});
-
-const enCours = computed(() => status.value === "pending");
+const enCours = ref(false);
+const echec = ref("");
 
 const traiter = async () => {
-  await execute();
+  enCours.value = true;
+  echec.value = "";
+  try {
+    await $fetch(`${racine}/traitement`, {
+      method: "POST",
+      body: { commentaire: commentaire.value },
+    });
+  } catch (e) {
+    echec.value = messageServeur(
+      e,
+      "Le traitement n'a pas pu être enregistré. Réessayez dans un instant.",
+    );
+  } finally {
+    enCours.value = false;
+  }
   await refresh();
 };
-
-const echec = computed(() =>
-  erreurTraitement.value
-    ? (erreurTraitement.value.statusMessage ??
-      "Le traitement n'a pas pu être enregistré. Réessayez dans un instant.")
-    : "",
-);
 
 const messageChargement = computed(() =>
   error.value?.statusCode === 404

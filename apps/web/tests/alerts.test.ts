@@ -6,7 +6,6 @@ import {
   deadlineLabel,
   departments,
   filter,
-  formatDate,
   isOverdue,
   listTitle,
   summarize,
@@ -224,18 +223,6 @@ describe("deadline label", () => {
   });
 });
 
-describe("displayed date", () => {
-  describe("Given the deadline of 18 September 2026", () => {
-    describe("When it is formatted", () => {
-      test("Then it is written day, month, year", () => {
-        const text = formatDate("2026-09-18");
-
-        expect(text).toBe("18/09/2026");
-      });
-    });
-  });
-});
-
 describe("list title", () => {
   describe("Given the To treat tab with six alerts", () => {
     describe("When the title is worded", () => {
@@ -263,18 +250,6 @@ describe("list title", () => {
         const title = listTitle("depassees", 1);
 
         expect(title).toBe("1 alerte dépassée");
-      });
-    });
-  });
-});
-
-describe("date missing in CIRIL", () => {
-  describe("Given a contract whose notification date is not filled in", () => {
-    describe("When it is formatted", () => {
-      test("Then it reads that it is not filled in", () => {
-        const text = formatDate(null);
-
-        expect(text).toBe("Non renseignée");
       });
     });
   });

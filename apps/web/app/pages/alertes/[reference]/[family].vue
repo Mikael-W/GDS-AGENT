@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { parisDay } from "#shared/domain/display";
+import { formatDate, parisDay } from "#shared/domain/display";
 import {
   type AlertDetail,
-  formatDate,
   FAMILY_LABELS,
   deadlineLabel,
   urgency,

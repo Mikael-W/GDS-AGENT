@@ -30,3 +30,8 @@ export function parisDay(instant: Date): string {
 export function parisToday(): string {
   return parisDay(new Date());
 }
+
+export function formatDate(iso: string | null): string {
+  if (iso === null) return "Non renseignée";
+  return `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}`;
+}

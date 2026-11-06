@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import { PAGE_SIZE, paginate, parisDay, plural } from "@/shared/domain/display";
+import { formatDate, PAGE_SIZE, paginate, parisDay, plural } from "@/shared/domain/display";
 
 describe("plural agreement", () => {
   describe("Given a single contract", () => {
@@ -84,6 +84,30 @@ describe("calendar day in Paris", () => {
         const date = parisDay(instant);
 
         expect(date).toBe("2026-11-04");
+      });
+    });
+  });
+});
+
+describe("displayed date", () => {
+  describe("Given the deadline of 18 September 2026", () => {
+    describe("When it is formatted", () => {
+      test("Then it is written day, month, year", () => {
+        const text = formatDate("2026-09-18");
+
+        expect(text).toBe("18/09/2026");
+      });
+    });
+  });
+});
+
+describe("date missing in CIRIL", () => {
+  describe("Given a contract whose notification date is not filled in", () => {
+    describe("When it is formatted", () => {
+      test("Then it reads that it is not filled in", () => {
+        const text = formatDate(null);
+
+        expect(text).toBe("Non renseignée");
       });
     });
   });

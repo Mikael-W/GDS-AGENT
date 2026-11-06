@@ -85,6 +85,36 @@ describe("reception", () => {
   });
 });
 
+describe("explanation phrases", () => {
+  describe("Given a tacit renewal ending on 4 March 2027", () => {
+    describe("When the reconduction alert is evaluated", () => {
+      test("Then the phrase states the end date in day/month/year", () => {
+        const m = contract({ endsOn: "2027-03-04", tacitRenewal: true });
+
+        const alert = only(evaluate(m, "2026-11-04"), "reconduction");
+
+        expect(alert.explanation).toBe(
+          "Le marché prend fin le 04/03/2027 et sera reconduit tacitement sans décision contraire.",
+        );
+      });
+    });
+  });
+
+  describe("Given a warranty ending on 15 December 2026", () => {
+    describe("When the warranty alert is evaluated", () => {
+      test("Then the phrase names the warranty end date without ISO notation", () => {
+        const m = contract({ warrantyEndsOn: "2026-12-15" });
+
+        const alert = only(evaluate(m, "2026-11-04"), "garantie");
+
+        expect(alert.explanation).toBe(
+          "La garantie prend fin le 15/12/2026 : dernier moment pour signaler une réserve.",
+        );
+      });
+    });
+  });
+});
+
 describe("guarantee", () => {
   it("triggers within 60 days of the guarantee end", () => {
     const m = contract({ warrantyEndsOn: "2026-12-15" });
@@ -112,7 +142,7 @@ describe("absence of purchase order", () => {
     // une échéance ratée reste visible tant qu'elle n'est pas traitée.
     const a = only(evaluate(m, "2026-11-04"), "sans_bon_de_commande");
     expect(a.deadlineOn).toBe("2026-10-30");
-    expect(a.explanation).toContain("2026-08-01");
+    expect(a.explanation).toContain("01/08/2026");
   });
 
   it("counts from the contract start when no commitment exists", () => {

@@ -1,3 +1,5 @@
+import { formatDate } from "./display";
+
 export const FAMILIES = [
   "reconduction",
   "garantie",
@@ -95,8 +97,8 @@ export function evaluate(
           triggerOn,
           today,
           contract.tacitRenewal
-            ? `Reconduction tacite au ${contract.endsOn} : sans décision contraire, le marché repart.`
-            : `Reconduction expresse à décider avant le ${contract.endsOn}.`,
+            ? `Le marché prend fin le ${formatDate(contract.endsOn)} et sera reconduit tacitement sans décision contraire.`
+            : `Le marché prend fin le ${formatDate(contract.endsOn)} : sa reconduction expresse doit être décidée avant cette date.`,
         ),
       );
     }
@@ -109,7 +111,7 @@ export function evaluate(
         contract,
         contract.warrantyEndsOn,
         today,
-        `Fin de la garantie le ${contract.warrantyEndsOn} : dernier moment pour signaler une réserve.`,
+        `La garantie prend fin le ${formatDate(contract.warrantyEndsOn)} : dernier moment pour signaler une réserve.`,
       ),
     );
   }
@@ -125,7 +127,7 @@ export function evaluate(
         contract,
         contract.endsOn,
         today,
-        `Le marché se termine le ${contract.endsOn} et aucune réception n'est enregistrée.`,
+        `Le marché prend fin le ${formatDate(contract.endsOn)} et aucune réception n'est enregistrée.`,
       ),
     );
   }
@@ -139,15 +141,15 @@ export function evaluate(
           contract,
           checkpoint,
           today,
-          `Six mois d'exécution au ${checkpoint} : point d'étape avec le titulaire.`,
+          `Le marché atteint six mois d'exécution le ${formatDate(checkpoint)} : un point d'étape est à faire avec le titulaire.`,
         ),
       );
     }
   }
 
   if (contract.hasPurchaseOrders && contract.startsOn) {
-    const depuis = contract.lastCommitmentOn ?? contract.startsOn;
-    const triggerOn = addDays(depuis, windows.sans_bon_de_commande);
+    const since = contract.lastCommitmentOn ?? contract.startsOn;
+    const triggerOn = addDays(since, windows.sans_bon_de_commande);
     if (withinWindow(today, triggerOn, 0)) {
       alerts.push(
         alert(
@@ -156,8 +158,8 @@ export function evaluate(
           triggerOn,
           today,
           contract.lastCommitmentOn
-            ? `Aucun bon de commande depuis le ${contract.lastCommitmentOn}.`
-            : `Aucun bon de commande depuis le début du marché, le ${contract.startsOn}.`,
+            ? `Aucun bon de commande émis depuis le ${formatDate(contract.lastCommitmentOn)}.`
+            : `Aucun bon de commande émis depuis le début du marché, le ${formatDate(contract.startsOn)}.`,
         ),
       );
     }

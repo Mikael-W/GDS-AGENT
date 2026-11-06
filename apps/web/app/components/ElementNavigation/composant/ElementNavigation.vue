@@ -1,5 +1,7 @@
 <script setup lang="ts">
-defineProps<{ libelle: string; route: string }>();
+import type { PropsElementNavigation } from "../types/ElementNavigation";
+
+defineProps<PropsElementNavigation>();
 </script>
 
 <template>

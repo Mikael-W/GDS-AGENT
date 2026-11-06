@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { fraicheur } from "~/domaine/fraicheur";
+import type { DerniereSynchronisation } from "../types/EtatSynchronisation";
 
 const RAFRAICHISSEMENT_MS = 60_000;
 
-const { data, error, refresh } = await useFetch<{ termineeLe: string | null }>(
+const { data, error, refresh } = await useFetch<DerniereSynchronisation>(
   "/api/synchronisation/derniere",
   { key: "derniere-synchronisation", default: () => ({ termineeLe: null }) },
 );

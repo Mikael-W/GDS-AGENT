@@ -1,6 +1,8 @@
 <script setup lang="ts">
-const { nomInitial } = defineProps<{ nomInitial: string }>();
-const emit = defineEmits<{ enregistre: [] }>();
+import type { EvenementsFormulaireNom, PropsFormulaireNom } from "../types/FormulaireNom";
+
+const { nomInitial } = defineProps<PropsFormulaireNom>();
+const emit = defineEmits<EvenementsFormulaireNom>();
 
 const nom = ref(nomInitial);
 const enCours = ref(false);
@@ -16,8 +18,7 @@ async function envoyer() {
     enregistre.value = true;
     emit("enregistre");
   } catch (e) {
-    const message = e instanceof Error ? e.message : "Enregistrement impossible";
-    erreur.value = message.replace(/^.*: /, "");
+    erreur.value = messageServeur(e, "Enregistrement impossible");
   } finally {
     enCours.value = false;
   }

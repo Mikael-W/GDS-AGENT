@@ -1,5 +1,7 @@
 <script setup lang="ts">
-defineProps<{ libelle: string; valeur: string }>();
+import type { PropsCarteChiffre } from "../types/CarteChiffre";
+
+defineProps<PropsCarteChiffre>();
 </script>
 
 <template>

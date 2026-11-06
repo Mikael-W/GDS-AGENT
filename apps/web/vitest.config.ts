@@ -1,3 +1,4 @@
+import { defineVitestProject } from "@nuxt/test-utils/config";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
@@ -8,9 +9,24 @@ export default defineConfig({
     },
   },
   test: {
-    environment: "node",
     fileParallelism: false,
-    include: ["tests/**/*.test.ts"],
-    setupFiles: ["tests/preparation.ts"],
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: "unitaires",
+          environment: "node",
+          include: ["tests/**/*.test.ts"],
+          setupFiles: ["tests/preparation.ts"],
+        },
+      },
+      await defineVitestProject({
+        test: {
+          name: "composants",
+          environment: "nuxt",
+          include: ["app/components/**/tests/**/*.test.ts"],
+        },
+      }),
+    ],
   },
 });

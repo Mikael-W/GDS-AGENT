@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { LIBELLES_FAMILLE, type Urgence } from "#shared/domaine/alertes";
-import type { Famille } from "#shared/domaine/echeances";
+import { LIBELLES_FAMILLE } from "#shared/domaine/alertes";
+import type { PropsEtiquetteFamille } from "../types/EtiquetteFamille";
 
-defineProps<{ famille: Famille; urgence: Urgence }>();
+defineProps<PropsEtiquetteFamille>();
 </script>
 
 <template>

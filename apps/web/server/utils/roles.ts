@@ -2,8 +2,8 @@ import type { Role } from "@projet/db/schema";
 
 export const FOURNISSEUR_OWNER = "aisisters";
 
-export function roleDepuisJeton(jetonAcces: string | undefined): Role {
-  const charge = jetonAcces?.split(".")[1];
+export function roleFromToken(accessToken: string | undefined): Role {
+  const charge = accessToken?.split(".")[1];
   if (!charge) return "membre";
   try {
     const content = JSON.parse(Buffer.from(charge, "base64url").toString("utf8")) as {

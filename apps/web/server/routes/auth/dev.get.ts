@@ -11,12 +11,12 @@ export default defineEventHandler(async (event) => {
   if (env().ENVIRONNEMENT !== "dev") {
     refuse(404, "Connexion de développement indisponible");
   }
-  const demande = String(getQuery(event).comme ?? "test");
-  const identite = ACCOUNTS[demande] ?? ACCOUNTS.test;
-  if (!identite) throw createError({ statusCode: 500 });
-  await enregistrer(identite);
+  const requested = String(getQuery(event).comme ?? "test");
+  const identity = ACCOUNTS[requested] ?? ACCOUNTS.test;
+  if (!identity) throw createError({ statusCode: 500 });
+  await upsertUser(identity);
   await setUserSession(event, {
-    user: { id: identite.sub, role: identite.role, email: identite.email, name: identite.name },
+    user: { id: identity.sub, role: identity.role, email: identity.email, name: identity.name },
   });
   return sendRedirect(event, "/tableau-de-bord");
 });

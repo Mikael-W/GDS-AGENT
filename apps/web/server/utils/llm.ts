@@ -11,7 +11,7 @@ export async function prompt(
 ): Promise<string> {
   const fichier = path.join(process.cwd(), "prompts", `${path.basename(name)}.md`);
   const text = await readFile(fichier, "utf8");
-  return text.replace(/\{(\w+)\}/g, (_tout, key: string) => {
+  return text.replace(/\{(\w+)\}/g, (_match, key: string) => {
     const value = variables[key];
     if (value === undefined) throw new Error(`Variable de prompt manquante : ${key}`);
     return value;

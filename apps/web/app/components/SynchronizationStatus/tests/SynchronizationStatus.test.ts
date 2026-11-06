@@ -13,7 +13,7 @@ describe("CIRIL data freshness status", () => {
   beforeEach(() => {
     vi.useFakeTimers({ toFake: ["Date"] });
     vi.setSystemTime(NOW);
-    clearNuxtData("derniere-synchronisation");
+    clearNuxtData("last-synchronization");
   });
   afterEach(() => vi.useRealTimers());
 
@@ -21,7 +21,7 @@ describe("CIRIL data freshness status", () => {
     describe("When the status is displayed", () => {
       test("Then the data is announced as up to date", async () => {
         const oneHour = new Date(NOW.getTime() - 3_600_000).toISOString();
-        registerEndpoint(ENDPOINT, () => ({ finishedOn: oneHour }));
+        registerEndpoint(ENDPOINT, () => ({ finishedAt: oneHour }));
 
         const state = await mountSuspended(SynchronizationStatus);
 
@@ -35,7 +35,7 @@ describe("CIRIL data freshness status", () => {
     describe("When the status is displayed", () => {
       test("Then the data is flagged as old", async () => {
         const threeDays = new Date(NOW.getTime() - 3 * DAY_MS).toISOString();
-        registerEndpoint(ENDPOINT, () => ({ finishedOn: threeDays }));
+        registerEndpoint(ENDPOINT, () => ({ finishedAt: threeDays }));
 
         const state = await mountSuspended(SynchronizationStatus);
 
@@ -48,7 +48,7 @@ describe("CIRIL data freshness status", () => {
   describe("Given an application that has never read CIRIL", () => {
     describe("When the status is displayed", () => {
       test("Then it states that no reading has taken place", async () => {
-        registerEndpoint(ENDPOINT, () => ({ finishedOn: null }));
+        registerEndpoint(ENDPOINT, () => ({ finishedAt: null }));
 
         const state = await mountSuspended(SynchronizationStatus);
 

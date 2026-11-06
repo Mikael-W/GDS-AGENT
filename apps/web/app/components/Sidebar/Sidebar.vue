@@ -1,6 +1,6 @@
 <template>
   <aside aria-label="Barre latérale" class="barre">
-    <div class="identite">
+    <div class="identity">
       <span aria-hidden="true" class="pastille" />
       <div>
         <p class="nom">Marchés</p>
@@ -41,7 +41,7 @@
   }
 }
 
-.identite {
+.identity {
   display: flex;
   align-items: center;
   gap: 0.75rem;

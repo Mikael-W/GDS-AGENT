@@ -173,7 +173,7 @@ export type CirilContract = z.infer<typeof RawContract>;
  * absolue du point d'accès rendue par getAccessList (le serveur cherche la
  * clé de session dans la query string de cette URL). `requete` est un filtre
  * texte CIRIL ; vide = tout. Les montants et dates restent en string, le
- * mapping métier est côté `ciril-marches.ts`.
+ * mapping métier est côté `ciril-contracts.ts`.
  */
 export async function getContrats(opts: {
   financeUrl: string;

@@ -168,16 +168,13 @@ export const invoices = pgTable(
     montantTtc: numeric("montant_ttc", { precision: 14, scale: 2 }),
     recueLe: date("recue_le"),
     serviceFaitLe: date("service_fait_le"),
-    mandateeLe: date("mandatee_le"),
+    orderedOn: date("mandatee_le"),
     state: varchar("etat", { length: 40 }),
     etatLiquidation: varchar("etat_liquidation", { length: 40 }),
     revision: boolean("revision").notNull().default(false),
     fingerprint: char("empreinte", { length: 64 }).notNull(),
   },
-  (t) => [
-    index("factures_marche").on(t.contractId),
-    index("factures_mandatee_le").on(t.mandateeLe),
-  ],
+  (t) => [index("factures_marche").on(t.contractId), index("factures_mandatee_le").on(t.orderedOn)],
 );
 
 export type Invoice = typeof invoices.$inferSelect;
@@ -196,14 +193,14 @@ export const synchronizationResults = pgEnum("resultat_synchronisation", [
 export const synchronizations = pgTable("synchronisations", {
   id: serial("id").primaryKey(),
   demarreeLe: timestamp("demarree_le", { withTimezone: true }).notNull().defaultNow(),
-  finishedOn: timestamp("terminee_le", { withTimezone: true }),
+  finishedAt: timestamp("terminee_le", { withTimezone: true }),
   result: synchronizationResults("resultat").notNull().default("en_cours"),
   contractsRead: integer("marches_lus").notNull().default(0),
   contractsModified: integer("marches_modifies").notNull().default(0),
   error: text("erreur"),
 });
 
-export type Synchronisation = typeof synchronizations.$inferSelect;
+export type Synchronization = typeof synchronizations.$inferSelect;
 
 /**
  * Décision d'une personne de l'équipe sur une alerte d'échéance. Les alertes

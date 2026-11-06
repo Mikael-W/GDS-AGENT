@@ -6,14 +6,14 @@ const REFRESH_INTERVAL_MS = 60_000;
 
 const { data, error, refresh } = await useFetch<LastSynchronization>(
   "/api/synchronisation/derniere",
-  { key: "derniere-synchronisation", default: () => ({ finishedOn: null }) },
+  { key: "last-synchronization", default: () => ({ finishedAt: null }) },
 );
 
-const now = useState("maintenant", () => Date.now());
+const now = useState("now", () => Date.now());
 
 const state = computed(() =>
   freshness(
-    data.value.finishedOn ? new Date(data.value.finishedOn) : null,
+    data.value.finishedAt ? new Date(data.value.finishedAt) : null,
     new Date(now.value),
   ),
 );

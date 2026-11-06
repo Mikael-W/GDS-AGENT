@@ -6,8 +6,8 @@ import Sidebar from "../Sidebar.vue";
 
 describe("application sidebar", () => {
   beforeEach(() => {
-    clearNuxtData("derniere-synchronisation");
-    registerEndpoint("/api/synchronisation/derniere", () => ({ finishedOn: null }));
+    clearNuxtData("last-synchronization");
+    registerEndpoint("/api/synchronisation/derniere", () => ({ finishedAt: null }));
   });
 
   describe("Given a logged-in agent", () => {

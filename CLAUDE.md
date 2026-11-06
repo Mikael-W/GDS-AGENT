@@ -12,7 +12,7 @@ Le code reflète à tout instant exactement l'état voulu, sans strate morte, qu
 
 ## Règles maison
 
-- Le code est en anglais : fichiers, dossiers, composants, fonctions, variables, types et descriptions de tests. Restent en français le texte de l'interface, les URL des pages et de l'API, les noms de tables et de colonnes SQL, et les valeurs enregistrées. Messages de commit en anglais (`type(scope): subject`), documentation (CLAUDE.md, ADR, kanban, README) en français.
+- Le code est en anglais : fichiers, dossiers, composants, fonctions, variables, types et descriptions de tests. Restent en français le texte de l'interface, les URL des pages et de l'API, les noms de tables et de colonnes SQL, les classes CSS, les clés de la réponse de santé et les valeurs enregistrées. Messages de commit en anglais (`type(scope): subject`), documentation (CLAUDE.md, ADR, kanban, README) en français.
 - Aucun emoji et aucun tiret cadratin ni demi-cadratin, nulle part : interface, textes, commentaires, commits, réponses.
 - L'interface est en français, sans jargon technique : une erreur parle du produit, pas de l'infra.
 - Aucun déploiement sans demande explicite. Déployer = `make deploy`, jamais `docker compose` ni commandes à la main sur la VM.

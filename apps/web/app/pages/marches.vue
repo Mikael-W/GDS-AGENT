@@ -16,7 +16,7 @@ definePageMeta({ middleware: "authenticated" });
 
 useHead({ title: "Marchés - Suivi des marchés" });
 
-const today = useState("aujourdhui", () => parisToday());
+const today = useState("today", () => parisToday());
 
 const { data: contracts, error } = await useFetch<ContractListItem[]>("/api/marches", {
   default: () => [],

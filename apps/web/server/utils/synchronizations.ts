@@ -33,7 +33,7 @@ export async function journal<T extends SynchronizationReport>(
   } catch (error) {
     await db
       .update(synchronizations)
-      .set({ result: "echec", finishedOn: sql`now()`, error: failureReason(error) })
+      .set({ result: "echec", finishedAt: sql`now()`, error: failureReason(error) })
       .where(aLaLigne)
       .catch(() => undefined);
     throw error;
@@ -43,7 +43,7 @@ export async function journal<T extends SynchronizationReport>(
     .update(synchronizations)
     .set({
       result: "succes",
-      finishedOn: sql`now()`,
+      finishedAt: sql`now()`,
       contractsRead: bilan.received,
       contractsModified: bilan.inserted + bilan.updated,
     })

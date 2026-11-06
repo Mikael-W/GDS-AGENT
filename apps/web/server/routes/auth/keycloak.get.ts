@@ -13,12 +13,12 @@ declare module "#auth-utils" {
 }
 
 export default defineOAuthKeycloakEventHandler({
-  async onSuccess(event, { user: profil, tokens }) {
-    const sub = String(profil.sub);
-    const role = roleDepuisJeton(tokens.access_token);
-    await enregistrer({ sub, email: profil.email, name: profil.name, role });
+  async onSuccess(event, { user: profile, tokens }) {
+    const sub = String(profile.sub);
+    const role = roleFromToken(tokens.access_token);
+    await upsertUser({ sub, email: profile.email, name: profile.name, role });
     await setUserSession(event, {
-      user: { id: sub, role, email: profil.email, name: profil.name },
+      user: { id: sub, role, email: profile.email, name: profile.name },
       idToken: tokens.id_token,
     });
     return sendRedirect(event, "/tableau-de-bord");

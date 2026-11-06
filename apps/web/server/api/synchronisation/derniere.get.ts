@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
   await requireUserSession(event);
   const row = await getDb().query.synchronizations.findFirst({
     where: eq(schema.synchronizations.result, "succes"),
-    orderBy: desc(schema.synchronizations.finishedOn),
+    orderBy: desc(schema.synchronizations.finishedAt),
   });
-  return { finishedOn: row?.finishedOn ?? null };
+  return { finishedAt: row?.finishedAt ?? null };
 });

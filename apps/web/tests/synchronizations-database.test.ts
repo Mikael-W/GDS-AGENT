@@ -41,7 +41,7 @@ describe.skipIf(!url)("journal des synchronisations avec CIRIL", () => {
         const [row] = await rows();
 
         expect(row?.result).toBe("succes");
-        expect(row?.finishedOn).not.toBeNull();
+        expect(row?.finishedAt).not.toBeNull();
       });
 
       test("Then it counts three contracts read and two modified", async () => {
@@ -72,7 +72,7 @@ describe.skipIf(!url)("journal des synchronisations avec CIRIL", () => {
         const [row] = await rows();
 
         expect(row?.result).toBe("echec");
-        expect(row?.finishedOn).not.toBeNull();
+        expect(row?.finishedAt).not.toBeNull();
       });
 
       test("Then its reason is recorded so that an outage is visible", async () => {

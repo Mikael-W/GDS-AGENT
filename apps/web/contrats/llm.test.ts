@@ -4,7 +4,7 @@ import { repondre } from "@/server/utils/llm";
 
 /** LLM : le modèle configuré répond. Ignoré (et listé) si le secret manque. */
 const secrets = ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"];
-const manquants = secrets.filter((nom) => !process.env[nom]);
+const manquants = secrets.filter((name) => !process.env[name]);
 
 it.skipIf(manquants.length > 0)(`le modèle répond (secrets : ${secrets.join(", ")})`, async () => {
   Object.assign(process.env, {
@@ -13,6 +13,6 @@ it.skipIf(manquants.length > 0)(`le modèle répond (secrets : ${secrets.join(",
     AUTH_KEYCLOAK_ID: "contrat",
     AUTH_KEYCLOAK_SECRET: "contrat",
   });
-  const texte = await repondre("Réponds par un seul mot.", "Dis bonjour.");
-  expect(texte.trim().length).toBeGreaterThan(0);
+  const text = await repondre("Réponds par un seul mot.", "Dis bonjour.");
+  expect(text.trim().length).toBeGreaterThan(0);
 });

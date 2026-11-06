@@ -4,7 +4,7 @@
  * conteneur) ; sans elle ils sont ignorés en local et échouent en CI
  * (EXIGER_BASE=1).
  */
-if (process.env.EXIGER_BASE === "1" && !process.env.TEST_DATABASE_URL) {
+if (process.env.REQUIRE_DATABASE === "1" && !process.env.TEST_DATABASE_URL) {
   throw new Error("TEST_DATABASE_URL est requise (EXIGER_BASE=1)");
 }
 

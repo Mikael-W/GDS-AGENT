@@ -1,6 +1,6 @@
 <template>
   <div class="coquille">
-    <BarreLaterale />
+    <Sidebar />
     <main class="contenu">
       <slot />
     </main>

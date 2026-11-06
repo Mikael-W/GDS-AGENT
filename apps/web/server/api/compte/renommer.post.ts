@@ -1,13 +1,13 @@
 import { z } from "zod";
 
-const Saisie = z.object({ nom: z.string().trim().min(1, "Le nom est vide").max(200) });
+const Saisie = z.object({ name: z.string().trim().min(1, "Le nom est vide").max(200) });
 
 export default defineEventHandler(async (event) => {
   const { user } = await requireUserSession(event);
   const resultat = Saisie.safeParse(await readBody(event));
   if (!resultat.success) {
-    refuser(400, resultat.error.issues[0]?.message ?? "Saisie invalide");
+    refuse(400, resultat.error.issues[0]?.message ?? "Saisie invalide");
   }
-  await renommer(user.id, resultat.data.nom);
+  await rename(user.id, resultat.data.name);
   return { ok: true };
 });

@@ -3,9 +3,9 @@ import { desc, eq } from "drizzle-orm";
 
 export default defineEventHandler(async (event) => {
   await requireUserSession(event);
-  const ligne = await base().query.synchronisations.findFirst({
-    where: eq(schema.synchronisations.resultat, "succes"),
-    orderBy: desc(schema.synchronisations.termineeLe),
+  const row = await getDb().query.synchronizations.findFirst({
+    where: eq(schema.synchronizations.resultat, "succes"),
+    orderBy: desc(schema.synchronizations.finishedOn),
   });
-  return { termineeLe: ligne?.termineeLe ?? null };
+  return { finishedOn: row?.finishedOn ?? null };
 });

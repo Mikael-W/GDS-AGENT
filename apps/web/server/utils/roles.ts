@@ -6,10 +6,10 @@ export function roleDepuisJeton(jetonAcces: string | undefined): Role {
   const charge = jetonAcces?.split(".")[1];
   if (!charge) return "membre";
   try {
-    const contenu = JSON.parse(Buffer.from(charge, "base64url").toString("utf8")) as {
+    const content = JSON.parse(Buffer.from(charge, "base64url").toString("utf8")) as {
       identity_provider?: unknown;
     };
-    return contenu.identity_provider === FOURNISSEUR_OWNER ? "owner" : "membre";
+    return content.identity_provider === FOURNISSEUR_OWNER ? "owner" : "membre";
   } catch {
     return "membre";
   }

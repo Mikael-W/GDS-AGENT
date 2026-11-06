@@ -1,28 +1,28 @@
 <script setup lang="ts">
-import { pluriel } from "#shared/domaine/affichage";
-import { type AlerteListe, LIBELLES_FAMILLE, libelleEcheance, lienAlerte, urgence } from "#shared/domaine/alertes";
-import { FAMILLES, type Famille } from "#shared/domaine/echeances";
+import { plural } from "#shared/domain/display";
+import { type AlertListItem, FAMILY_LABELS, deadlineLabel, alertLink, urgency } from "#shared/domain/alerts";
+import { FAMILIES, type Family } from "#shared/domain/deadlines";
 import {
-  FAMILLE_TOUTES,
-  filtrerParFamille,
-  grouperParMois,
-  jourDuMois,
-  syntheseEcheancier,
-} from "#shared/domaine/echeancier";
+  ALL_FAMILIES,
+  filterByFamily,
+  groupByMonth,
+  dayOfMonth,
+  scheduleSummary,
+} from "#shared/domain/schedule";
 
-definePageMeta({ middleware: "connecte" });
+definePageMeta({ middleware: "authenticated" });
 
 useHead({ title: "Échéancier - Suivi des marchés" });
 
-const { data: echeances, error } = await useFetch<AlerteListe[]>("/api/echeancier", {
+const { data: deadlines, error } = await useFetch<AlertListItem[]>("/api/echeancier", {
   default: () => [],
 });
 
-const famille = ref<Famille | typeof FAMILLE_TOUTES>(FAMILLE_TOUTES);
+const family = ref<Family | typeof ALL_FAMILIES>(ALL_FAMILIES);
 
-const resume = computed(() => syntheseEcheancier(echeances.value));
-const groupes = computed(() =>
-  grouperParMois(filtrerParFamille(echeances.value, { famille: famille.value })),
+const summary = computed(() => scheduleSummary(deadlines.value));
+const groups = computed(() =>
+  groupByMonth(filterByFamily(deadlines.value, { family: family.value })),
 );
 </script>
 
@@ -35,9 +35,9 @@ const groupes = computed(() =>
       </div>
       <div>
         <label for="famille" class="visuellement-cache">Famille d'alerte</label>
-        <select id="famille" v-model="famille" class="filtre">
-          <option :value="FAMILLE_TOUTES">Toutes les familles</option>
-          <option v-for="f in FAMILLES" :key="f" :value="f">{{ LIBELLES_FAMILLE[f] }}</option>
+        <select id="famille" v-model="family" class="filtre">
+          <option :value="ALL_FAMILIES">Toutes les familles</option>
+          <option v-for="f in FAMILIES" :key="f" :value="f">{{ FAMILY_LABELS[f] }}</option>
         </select>
       </div>
     </header>
@@ -48,29 +48,29 @@ const groupes = computed(() =>
 
     <template v-else>
       <section aria-label="Chiffres clés" class="chiffres">
-        <CarteChiffre libelle="Échéances dépassées" :valeur="String(resume.depassees)" />
-        <CarteChiffre libelle="Sous 30 jours" :valeur="String(resume.sousTrenteJours)" />
+        <FigureCard label="Échéances dépassées" :value="String(summary.overdue)" />
+        <FigureCard label="Sous 30 jours" :value="String(summary.withinThirtyDays)" />
       </section>
 
-      <p v-if="groupes.length === 0" class="vide">Aucune échéance ne correspond à ce choix.</p>
+      <p v-if="groups.length === 0" class="vide">Aucune échéance ne correspond à ce choix.</p>
 
-      <section v-for="groupe in groupes" :key="groupe.mois" class="mois" :aria-label="groupe.libelle">
-        <header :class="['mois__entete', { 'mois__entete--retard': groupe.contientDepassee }]">
-          <h2 class="titre-carte">{{ groupe.libelle }}</h2>
-          <p class="discret">{{ pluriel(groupe.alertes.length, "échéance") }}</p>
+      <section v-for="group in groups" :key="group.month" class="mois" :aria-label="group.label">
+        <header :class="['mois__entete', { 'mois__entete--retard': group.containsOverdue }]">
+          <h2 class="titre-carte">{{ group.label }}</h2>
+          <p class="discret">{{ plural(group.alerts.length, "échéance") }}</p>
         </header>
         <ul class="mois__liste">
-          <li v-for="a in groupe.alertes" :key="`${a.reference}-${a.famille}`">
-            <NuxtLink :to="lienAlerte(a)" class="ligne">
-              <span :class="['jour', `jour--${urgence(a)}`]">{{ jourDuMois(a) }}</span>
-              <EtiquetteFamille :famille="a.famille" :urgence="urgence(a)" />
+          <li v-for="a in group.alerts" :key="`${a.reference}-${a.family}`">
+            <NuxtLink :to="alertLink(a)" class="ligne">
+              <span :class="['jour', `jour--${urgency(a)}`]">{{ dayOfMonth(a) }}</span>
+              <FamilyBadge :family="a.family" :urgency="urgency(a)" />
               <span class="marche">
-                <span class="objet">{{ a.objet ?? "Sans objet" }}</span>
+                <span class="objet">{{ a.subject ?? "Sans objet" }}</span>
                 <span class="reference">
                   {{ a.reference }}<template v-if="a.service"> · {{ a.service }}</template>
                 </span>
               </span>
-              <span :class="['delai', `delai--${urgence(a)}`]">{{ libelleEcheance(a.joursRestants) }}</span>
+              <span :class="['delai', `delai--${urgency(a)}`]">{{ deadlineLabel(a.daysRemaining) }}</span>
             </NuxtLink>
           </li>
         </ul>

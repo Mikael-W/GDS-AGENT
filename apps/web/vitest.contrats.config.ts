@@ -7,14 +7,14 @@ import { defineConfig } from "vitest/config";
 // écraser l'environnement déjà posé (ex. GitHub Actions).
 function chargerEnv(chemin: string): Record<string, string> {
   try {
-    const texte = readFileSync(new URL(chemin, import.meta.url), "utf8");
+    const text = readFileSync(new URL(chemin, import.meta.url), "utf8");
     const env: Record<string, string> = {};
-    for (const ligne of texte.split("\n")) {
-      const paire = ligne.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*?)\s*$/);
+    for (const row of text.split("\n")) {
+      const paire = row.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*?)\s*$/);
       if (!paire) continue;
-      const cle = paire[1];
-      const valeur = paire[2]?.replace(/^"(.*)"$/, "$1") ?? "";
-      if (cle && !process.env[cle]) env[cle] = valeur;
+      const key = paire[1];
+      const value = paire[2]?.replace(/^"(.*)"$/, "$1") ?? "";
+      if (key && !process.env[key]) env[key] = value;
     }
     return env;
   } catch {

@@ -1,7 +1,7 @@
 import { z } from "zod";
 
-export const SECRET_DE_DEV = "secret-de-developpement-a-ne-jamais-utiliser-en-prod";
-const BASE_DE_DEV = "postgres://app:app@127.0.0.1:5440/app";
+export const DEV_SECRET = "secret-de-developpement-a-ne-jamais-utiliser-en-prod";
+const DEV_DATABASE = "postgres://app:app@127.0.0.1:5440/app";
 
 const schema = z
   .object({
@@ -11,7 +11,7 @@ const schema = z
     AUTH_KEYCLOAK_ID: z.string().min(1),
     AUTH_KEYCLOAK_SECRET: z.string().min(1),
     AUTH_URL: z.url().default("http://localhost:9999"),
-    DATABASE_URL: z.string().startsWith("postgres").default(BASE_DE_DEV),
+    DATABASE_URL: z.string().startsWith("postgres").default(DEV_DATABASE),
     SENTRY_DSN: z.string().default(""),
     GIT_SHA: z.string().default("dev"),
     AWS_REGION: z.literal("eu-west-3").default("eu-west-3"),
@@ -22,27 +22,27 @@ const schema = z
   })
   .superRefine((r, ctx) => {
     if (r.ENVIRONNEMENT !== "prod") return;
-    const refuser = (message: string) => ctx.addIssue({ code: "custom", message });
-    if (r.AUTH_SECRET === SECRET_DE_DEV) refuser("AUTH_SECRET garde la valeur de développement");
+    const refuse = (message: string) => ctx.addIssue({ code: "custom", message });
+    if (r.AUTH_SECRET === DEV_SECRET) refuse("AUTH_SECRET garde la valeur de développement");
     if (!r.AUTH_KEYCLOAK_ISSUER.startsWith("https://"))
-      refuser("AUTH_KEYCLOAK_ISSUER doit être en https");
-    if (!r.AUTH_URL.startsWith("https://")) refuser("AUTH_URL doit être en https");
-    if (r.DATABASE_URL === BASE_DE_DEV || r.DATABASE_URL.includes(":app@")) {
-      refuser("DATABASE_URL garde le mot de passe de développement");
+      refuse("AUTH_KEYCLOAK_ISSUER doit être en https");
+    if (!r.AUTH_URL.startsWith("https://")) refuse("AUTH_URL doit être en https");
+    if (r.DATABASE_URL === DEV_DATABASE || r.DATABASE_URL.includes(":app@")) {
+      refuse("DATABASE_URL garde le mot de passe de développement");
     }
-    if (!r.SENTRY_DSN) refuser("SENTRY_DSN est vide (projet GlitchTip)");
-    if (r.GIT_SHA === "dev") refuser("GIT_SHA absent : image construite hors CI");
+    if (!r.SENTRY_DSN) refuse("SENTRY_DSN est vide (projet GlitchTip)");
+    if (r.GIT_SHA === "dev") refuse("GIT_SHA absent : image construite hors CI");
   });
 
 export type Env = z.infer<typeof schema>;
 
-export function lireEnv(source: Record<string, string | undefined>): Env {
+export function readEnv(source: Record<string, string | undefined>): Env {
   const resultat = schema.safeParse(source);
   if (!resultat.success) {
-    const detail = resultat.error.issues
+    const details = resultat.error.issues
       .map((i) => (i.path.length ? `${i.path.join(".")} : ${i.message}` : i.message))
       .join(" ; ");
-    throw new Error(`Réglages refusés : ${detail}`);
+    throw new Error(`Réglages refusés : ${details}`);
   }
   return resultat.data;
 }
@@ -50,6 +50,6 @@ export function lireEnv(source: Record<string, string | undefined>): Env {
 let memo: Env | undefined;
 
 export function env(): Env {
-  memo ??= lireEnv(process.env);
+  memo ??= readEnv(process.env);
   return memo;
 }

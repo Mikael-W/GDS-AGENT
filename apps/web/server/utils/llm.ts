@@ -5,13 +5,16 @@ import { generateText, type LanguageModel } from "ai";
 
 import { env } from "./env";
 
-export async function prompt(nom: string, variables: Record<string, string> = {}): Promise<string> {
-  const fichier = path.join(process.cwd(), "prompts", `${path.basename(nom)}.md`);
-  const texte = await readFile(fichier, "utf8");
-  return texte.replace(/\{(\w+)\}/g, (_tout, cle: string) => {
-    const valeur = variables[cle];
-    if (valeur === undefined) throw new Error(`Variable de prompt manquante : ${cle}`);
-    return valeur;
+export async function prompt(
+  name: string,
+  variables: Record<string, string> = {},
+): Promise<string> {
+  const fichier = path.join(process.cwd(), "prompts", `${path.basename(name)}.md`);
+  const text = await readFile(fichier, "utf8");
+  return text.replace(/\{(\w+)\}/g, (_tout, key: string) => {
+    const value = variables[key];
+    if (value === undefined) throw new Error(`Variable de prompt manquante : ${key}`);
+    return value;
   });
 }
 

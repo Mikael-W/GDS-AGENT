@@ -1,58 +1,58 @@
 <script setup lang="ts">
-import { paginer } from "#shared/domaine/affichage";
+import { paginate } from "#shared/domain/display";
 import {
-  type AlerteListe,
-  filtrer,
-  formaterDate,
-  LIBELLES_FAMILLE,
-  libelleEcheance,
-  lienAlerte,
-  type PeriodeAlertes,
-  services,
-  synthese,
-  titreListe,
-  urgence,
-  type VueAlertes,
-} from "#shared/domaine/alertes";
-import { FAMILLES, type Famille } from "#shared/domaine/echeances";
+  type AlertListItem,
+  filter,
+  formatDate,
+  FAMILY_LABELS,
+  deadlineLabel,
+  alertLink,
+  type AlertPeriod,
+  departments,
+  summarize,
+  listTitle,
+  urgency,
+  type AlertView,
+} from "#shared/domain/alerts";
+import { FAMILIES, type Family } from "#shared/domain/deadlines";
 
-definePageMeta({ middleware: "connecte" });
+definePageMeta({ middleware: "authenticated" });
 
 useHead({ title: "Alertes - Suivi des marchés" });
 
-const { data: alertes, error } = await useFetch<AlerteListe[]>("/api/alertes", {
+const { data: alerts, error } = await useFetch<AlertListItem[]>("/api/alertes", {
   default: () => [],
 });
 
-const vue = ref<VueAlertes>("a_traiter");
+const view = ref<AlertView>("a_traiter");
 const service = ref("");
-const famille = ref<Famille | "">("");
-const periode = ref<PeriodeAlertes>("toutes");
-const numeroPage = ref(1);
+const family = ref<Family | "">("");
+const period = ref<AlertPeriod>("toutes");
+const pageNumber = ref(1);
 
-watch([vue, service, famille, periode], () => {
-  numeroPage.value = 1;
+watch([view, service, family, period], () => {
+  pageNumber.value = 1;
 });
 
-const resume = computed(() => synthese(alertes.value));
-const servicesProposes = computed(() => services(alertes.value));
+const summary = computed(() => summarize(alerts.value));
+const offeredDepartments = computed(() => departments(alerts.value));
 const page = computed(() =>
-  paginer(
-    filtrer(alertes.value, {
-      vue: vue.value,
+  paginate(
+    filter(alerts.value, {
+      view: view.value,
       service: service.value,
-      famille: famille.value,
-      periode: periode.value,
+      family: family.value,
+      period: period.value,
     }),
-    numeroPage.value,
+    pageNumber.value,
   ),
 );
 
 const precedente = () => {
-  numeroPage.value = page.value.page - 1;
+  pageNumber.value = page.value.page - 1;
 };
 const suivante = () => {
-  numeroPage.value = page.value.page + 1;
+  pageNumber.value = page.value.page + 1;
 };
 </script>
 
@@ -71,40 +71,40 @@ const suivante = () => {
       <div class="onglets" role="group" aria-label="Vue des alertes">
         <button
           type="button"
-          :class="['onglet', { 'onglet--actif': vue === 'a_traiter' }]"
-          :aria-pressed="vue === 'a_traiter'"
-          @click="vue = 'a_traiter'"
+          :class="['onglet', { 'onglet--actif': view === 'a_traiter' }]"
+          :aria-pressed="view === 'a_traiter'"
+          @click="view = 'a_traiter'"
         >
-          À traiter <span class="compte">{{ resume.aTraiter }}</span>
+          À traiter <span class="compte">{{ summary.toTreat }}</span>
         </button>
         <button
           type="button"
-          :class="['onglet', { 'onglet--actif': vue === 'depassees' }]"
-          :aria-pressed="vue === 'depassees'"
-          @click="vue = 'depassees'"
+          :class="['onglet', { 'onglet--actif': view === 'depassees' }]"
+          :aria-pressed="view === 'depassees'"
+          @click="view = 'depassees'"
         >
-          Dont dépassées <span class="compte">{{ resume.depassees }}</span>
+          Dont dépassées <span class="compte">{{ summary.overdue }}</span>
         </button>
       </div>
 
       <section class="liste">
         <div class="liste__entete">
-          <h2 class="titre-carte">{{ titreListe(vue, page.total) }}</h2>
+          <h2 class="titre-carte">{{ listTitle(view, page.total) }}</h2>
           <label for="service" class="visuellement-cache">Service</label>
           <select id="service" v-model="service" class="filtre">
             <option value="">Tous les services</option>
-            <option v-for="nom in servicesProposes" :key="nom" :value="nom">{{ nom }}</option>
+            <option v-for="name in offeredDepartments" :key="name" :value="name">{{ name }}</option>
           </select>
           <label for="periode" class="visuellement-cache">Période</label>
-          <select id="periode" v-model="periode" class="filtre">
+          <select id="periode" v-model="period" class="filtre">
             <option value="toutes">Toutes les périodes</option>
             <option value="30">Dépassées ou sous 30 jours</option>
             <option value="90">Dépassées ou sous 90 jours</option>
           </select>
           <label for="famille" class="visuellement-cache">Type d'alerte</label>
-          <select id="famille" v-model="famille" class="filtre">
+          <select id="famille" v-model="family" class="filtre">
             <option value="">Tous types d'alerte</option>
-            <option v-for="f in FAMILLES" :key="f" :value="f">{{ LIBELLES_FAMILLE[f] }}</option>
+            <option v-for="f in FAMILIES" :key="f" :value="f">{{ FAMILY_LABELS[f] }}</option>
           </select>
         </div>
 
@@ -121,21 +121,21 @@ const suivante = () => {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="a in page.lignes" :key="`${a.reference}-${a.famille}`">
+              <tr v-for="a in page.rows" :key="`${a.reference}-${a.family}`">
                 <td>
-                  <p class="echeance">{{ formaterDate(a.echeanceLe) }}</p>
-                  <p :class="`delai delai--${urgence(a)}`">
-                    {{ libelleEcheance(a.joursRestants) }}
+                  <p class="echeance">{{ formatDate(a.deadlineOn) }}</p>
+                  <p :class="`delai delai--${urgency(a)}`">
+                    {{ deadlineLabel(a.daysRemaining) }}
                   </p>
                 </td>
-                <td><EtiquetteFamille :famille="a.famille" :urgence="urgence(a)" /></td>
+                <td><FamilyBadge :family="a.family" :urgency="urgency(a)" /></td>
                 <td>
-                  <p class="marche">{{ a.objet ?? "Sans objet" }}</p>
+                  <p class="marche">{{ a.subject ?? "Sans objet" }}</p>
                   <p class="reference">{{ a.reference }}</p>
                 </td>
-                <td>{{ a.explication }}</td>
+                <td>{{ a.explanation }}</td>
                 <td>
-                  <NuxtLink :to="lienAlerte(a)" class="examiner">
+                  <NuxtLink :to="alertLink(a)" class="examiner">
                     Examiner<span class="visuellement-cache"> l'alerte du marché {{ a.reference }}</span>
                   </NuxtLink>
                 </td>
@@ -148,16 +148,16 @@ const suivante = () => {
 
         <footer class="liste__pied">
           <p class="discret" aria-live="polite">
-            Alertes affichées : {{ page.lignes.length }} sur {{ page.total }}
+            Alertes affichées : {{ page.rows.length }} sur {{ page.total }}
           </p>
           <nav aria-label="Pagination" class="pagination">
-            <Bouton variante="contour" taille="petit" :disabled="page.page <= 1" @click="precedente">
+            <Button variant="outline" size="small" :disabled="page.page <= 1" @click="precedente">
               Précédent
-            </Bouton>
+            </Button>
             <p class="discret">Page {{ page.page }} sur {{ page.pages }}</p>
-            <Bouton variante="contour" taille="petit" :disabled="page.page >= page.pages" @click="suivante">
+            <Button variant="outline" size="small" :disabled="page.page >= page.pages" @click="suivante">
               Suivant
-            </Bouton>
+            </Button>
           </nav>
         </footer>
       </section>

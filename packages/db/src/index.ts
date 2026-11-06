@@ -10,8 +10,8 @@ export * as schema from "./schema";
  * application crée sa connexion avec sa propre URL, lue dans son
  * environnement validé.
  */
-export type Base = ReturnType<typeof drizzle<typeof schema>>;
+export type Database = ReturnType<typeof drizzle<typeof schema>>;
 
-export function creerBase(url: string, connexionsMax = 10): Base {
+export function createDatabase(url: string, connexionsMax = 10): Database {
   return drizzle(postgres(url, { max: connexionsMax }), { schema });
 }

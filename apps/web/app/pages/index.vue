@@ -1,5 +1,5 @@
 <script setup lang="ts">
-definePageMeta({ layout: false, middleware: "anonyme" });
+definePageMeta({ layout: false, middleware: "anonymous" });
 
 useHead({ title: "Connexion - Suivi des marchés" });
 
@@ -18,16 +18,16 @@ function aller(url: string) {
       Les échéances, les avances et les révisions de prix des marchés de la Communauté
       de communes, rassemblées au même endroit.
     </p>
-    <Bouton @click="aller('/auth/keycloak')">Se connecter</Bouton>
+    <Button @click="aller('/auth/keycloak')">Se connecter</Button>
     <div v-if="estDev" class="dev">
       <span>Connexion rapide de développement (hors production) :</span>
       <div class="dev__actions">
-        <Bouton variante="contour" taille="petit" @click="aller('/auth/dev?comme=test')">
+        <Button variant="outline" size="small" @click="aller('/auth/dev?comme=test')">
           Entrer comme test (membre)
-        </Bouton>
-        <Bouton variante="contour" taille="petit" @click="aller('/auth/dev?comme=admin')">
+        </Button>
+        <Button variant="outline" size="small" @click="aller('/auth/dev?comme=admin')">
           Entrer comme admin (owner)
-        </Bouton>
+        </Button>
       </div>
     </div>
   </main>

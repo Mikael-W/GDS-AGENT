@@ -9,10 +9,7 @@ const COMPTES: Record<string, Identite> = {
 
 export default defineEventHandler(async (event) => {
   if (env().ENVIRONNEMENT !== "dev") {
-    throw createError({
-      statusCode: 404,
-      statusMessage: "Connexion de développement indisponible",
-    });
+    refuser(404, "Connexion de développement indisponible");
   }
   const demande = String(getQuery(event).comme ?? "test");
   const identite = COMPTES[demande] ?? COMPTES.test;

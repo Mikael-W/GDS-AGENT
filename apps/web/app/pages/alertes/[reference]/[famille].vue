@@ -18,29 +18,6 @@ const { data: alerte, error, refresh } = await useFetch<DetailAlerte>(racine);
 
 useHead({ title: "Alerte - Suivi des marchés" });
 
-const commentaire = ref("");
-
-const { error: erreurTraitement, status, execute } = useFetch(`${racine}/traitement`, {
-  method: "POST",
-  body: computed(() => ({ commentaire: commentaire.value })),
-  immediate: false,
-  watch: false,
-});
-
-const enCours = computed(() => status.value === "pending");
-
-const traiter = async () => {
-  await execute();
-  await refresh();
-};
-
-const echec = computed(() =>
-  erreurTraitement.value
-    ? (erreurTraitement.value.statusMessage ??
-      "Le traitement n'a pas pu être enregistré. Réessayez dans un instant.")
-    : "",
-);
-
 const messageChargement = computed(() =>
   error.value?.statusCode === 404
     ? "Cette alerte n'existe plus : son échéance a peut-être changé. Revenez à la liste des alertes."
@@ -114,24 +91,7 @@ const messageChargement = computed(() =>
           <p class="decision">{{ alerte.traitement.commentaire }}</p>
         </template>
 
-        <form v-else class="formulaire" @submit.prevent="traiter">
-          <p class="discret">Une alerte non traitée reste visible et revient dans les rappels.</p>
-          <label for="commentaire" class="etiquette-champ">Commentaire</label>
-          <textarea
-            id="commentaire"
-            v-model="commentaire"
-            class="zone"
-            rows="3"
-            required
-            placeholder="Ce qui a été décidé, et par qui"
-          />
-          <p v-if="echec" role="alert" class="erreur">{{ echec }}</p>
-          <div>
-            <Bouton type="submit" :disabled="enCours || commentaire.trim() === ''">
-              Marquer comme traité
-            </Bouton>
-          </div>
-        </form>
+        <FormulaireTraitement v-else :racine="racine" @traite="refresh" />
       </section>
     </template>
   </div>
@@ -250,29 +210,4 @@ const messageChargement = computed(() =>
   color: var(--foreground);
 }
 
-.formulaire {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.etiquette-champ {
-  font-size: 0.8125rem;
-  font-weight: 600;
-}
-
-.zone {
-  width: 100%;
-  padding: 0.625rem 0.75rem;
-  border: 1px solid var(--input);
-  border-radius: var(--radius);
-  background: var(--surface);
-  color: var(--foreground);
-  resize: vertical;
-}
-
-.zone:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 2px;
-}
 </style>

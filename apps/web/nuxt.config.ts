@@ -8,6 +8,14 @@ export default defineNuxtConfig({
   ssr: true,
   modules: ["nuxt-auth-utils", "@sentry/nuxt/module"],
   css: ["~/assets/css/main.css"],
+  components: [
+    {
+      path: "~/components",
+      pathPrefix: false,
+      extensions: ["vue"],
+      ignore: ["**/tests/**", "**/types/**"],
+    },
+  ],
   nitro: { preset: "node-server" },
   runtimeConfig: {
     session: {

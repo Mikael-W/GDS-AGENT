@@ -6,10 +6,7 @@ export default defineEventHandler(async (event) => {
   const { user } = await requireUserSession(event);
   const resultat = Saisie.safeParse(await readBody(event));
   if (!resultat.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: resultat.error.issues[0]?.message ?? "Saisie invalide",
-    });
+    refuser(400, resultat.error.issues[0]?.message ?? "Saisie invalide");
   }
   await renommer(user.id, resultat.data.nom);
   return { ok: true };

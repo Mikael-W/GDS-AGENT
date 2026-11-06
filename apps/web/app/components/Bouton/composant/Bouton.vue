@@ -1,16 +1,12 @@
 <script setup lang="ts">
-type Variante = "primaire" | "contour" | "secondaire";
-type Taille = "normal" | "petit";
+import type { PropsBouton } from "../types/Bouton";
 
-const props = withDefaults(
-  defineProps<{
-    variante?: Variante;
-    taille?: Taille;
-    type?: "button" | "submit";
-    disabled?: boolean;
-  }>(),
-  { variante: "primaire", taille: "normal", type: "button", disabled: false },
-);
+const props = withDefaults(defineProps<PropsBouton>(), {
+  variante: "primaire",
+  taille: "normal",
+  type: "button",
+  disabled: false,
+});
 </script>
 
 <template>
